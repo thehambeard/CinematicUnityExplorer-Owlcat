@@ -48,6 +48,7 @@ namespace UnityExplorer.UI.Panels
         Toggle HighLodToggle;
         object qualitySettings = null;
         PropertyInfo lodBias = null;
+        float _defaultLodBias = 1;
 
         // We save the current properties of the Renderers and Lights to restore them after editing them with togglers
         internal Dictionary<Renderer, bool> renderersReceiveShadows = new();
@@ -122,9 +123,9 @@ namespace UnityExplorer.UI.Panels
             if (lodBias == null){
                 Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
                 lodBias = qualitySettingsType.GetProperty("lodBias");
+                _defaultLodBias = (float)lodBias.GetValue(null);
             }
-
-            lodBias.SetValue(null, areHighLodsOn ? 10000 : 1, null);
+            lodBias.SetValue(null, areHighLodsOn ? 10000 : _defaultLodBias, null);
         }
 
         private void ToggleAllMeshesCastAndRecieveShadows(bool enable){
