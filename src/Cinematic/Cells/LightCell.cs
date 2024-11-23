@@ -29,7 +29,7 @@ namespace UnityExplorer.UI.Panels
 
             //Active toggle
             Toggle toggleLight;
-            GameObject toggleObj = UIFactory.CreateToggle(UIRoot, "UseGameCameraToggle", out toggleLight, out label);
+            GameObject toggleObj = UIFactory.CreateToggle(UIRoot, "ActivateLightToggle", out toggleLight, out label);
             UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
             toggleLight.onValueChanged.AddListener(value => { light.SetActive(value); });
             toggleLight.isOn = true;
@@ -90,7 +90,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         public static void CopyFreeCamTransform(GameObject obj){
-            Camera freeCam = FreeCamPanel.ourCamera;
+            Camera freeCam = FreeCamPanel.GetFreecam();
             
             if (freeCam != null) {
                 obj.transform.position = freeCam.transform.position;

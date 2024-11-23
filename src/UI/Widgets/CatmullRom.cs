@@ -183,7 +183,7 @@ namespace UnityExplorer.CatmullRom
             Vector3 camPos = FreeCamPanel.GetCameraPosition();
             Quaternion camRot = FreeCamPanel.GetCameraRotation();
 
-            return new CatmullRomPoint(camPos, camRot, FreeCamPanel.ourCamera.fieldOfView);
+            return new CatmullRomPoint(camPos, camRot, FreeCamPanel.GetFreecam().fieldOfView);
         }
 
         private void AdvanceMover(float dt){
@@ -238,14 +238,14 @@ namespace UnityExplorer.CatmullRom
 
             FreeCamPanel.SetCameraRotation(CatmullRomPoint.Vector4ToQuaternion(newRot));
             FreeCamPanel.SetCameraPosition(FreeCamPanel.GetCameraPosition() + direction.position);
-            FreeCamPanel.ourCamera.fieldOfView += direction.fov * actual / room;
+            FreeCamPanel.SetFOV(FreeCamPanel.GetFreecam().fieldOfView + direction.fov * actual / room);
         }
 
         public void MoveCameraToPoint(CatmullRomPoint newPoint){
             FreeCamPanel.SetCameraRotation(newPoint.rotation);
             FreeCamPanel.SetCameraPosition(newPoint.position);
 
-            FreeCamPanel.ourCamera.fieldOfView = newPoint.fov;
+            FreeCamPanel.SetFOV(newPoint.fov);
         }
 
         private CatmullRomPoint GetPointFromPath(float d)

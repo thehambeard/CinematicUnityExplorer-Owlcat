@@ -1,4 +1,5 @@
 ﻿using UnityExplorer.UI;
+using UnityExplorer.UI.Panels;
 
 namespace UnityExplorer.Config
 {
@@ -31,7 +32,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<bool> Reflection_Hide_NativeInfoPtrs;
         public static ConfigElement<bool> Auto_Scale_UI;
 
-        public static ConfigElement<bool> Default_Gameplay_Freecam;
+        public static ConfigElement<FreeCamPanel.FreeCameraType> Default_Freecam;
         public static ConfigElement<KeyCode> Pause;
         public static ConfigElement<KeyCode> Frameskip;
         public static ConfigElement<KeyCode> Screenshot;
@@ -185,9 +186,9 @@ namespace UnityExplorer.Config
                 "Especially useful when running games in high resolutions and you are having a hard time reading the mods menu (requires restart).",
                 true);
 
-            Default_Gameplay_Freecam = new("Default Gameplay Freecam",
-                "Turn this on if you want the default gameplay freecam toggle on the Freecam panel to be on on startup.",
-                false);
+            Default_Freecam = new("Default Freecam mode",
+                "Default type of freecam selected on startup.",
+                FreeCamPanel.FreeCameraType.New);
 
             Pause = new("Pause",
                 "Toggle the pause of the game.",

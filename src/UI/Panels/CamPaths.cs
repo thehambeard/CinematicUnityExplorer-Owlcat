@@ -107,7 +107,7 @@ namespace UnityExplorer.UI.Panels
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
 
-            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "►");
+            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "►", new Color(0.2f, 0.4f, 0.2f));
             UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 50, minHeight: 25);
             startButton.OnClick += StartButton_OnClick;
 
@@ -115,7 +115,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(pauseContinueButton.GameObject, minWidth: 50, minHeight: 25);
             pauseContinueButton.OnClick += TogglePause_OnClick;
 
-            ButtonRef stopButton = UIFactory.CreateButton(horiGroup, "Stop", "■");
+            ButtonRef stopButton = UIFactory.CreateButton(horiGroup, "Stop", "■", new Color(0.4f, 0.2f, 0.2f));
             UIFactory.SetLayoutElement(stopButton.GameObject, minWidth: 50, minHeight: 25);
             stopButton.ButtonText.fontSize = 20;
             stopButton.OnClick += Stop_OnClick;
@@ -364,7 +364,7 @@ namespace UnityExplorer.UI.Panels
             CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(
                 FreeCamPanel.GetCameraPosition(),
                 FreeCamPanel.GetCameraRotation(),
-                FreeCamPanel.ourCamera.fieldOfView
+                FreeCamPanel.GetFreecam().fieldOfView
             );
 
             controlPoints.Add(point);
