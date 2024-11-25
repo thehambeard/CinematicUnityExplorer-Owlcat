@@ -324,6 +324,19 @@ namespace UnityExplorer.UI.Widgets
             NameInput.Component.textComponent.fontSize = 15;
             NameInput.Component.GetOnEndEdit().AddListener((string val) => { OnNameEndEdit(val); });
 
+            ButtonRef MoveToCameraButton = UIFactory.CreateButton(titleRow, "MoveToCameraButton", "Move to Camera", new Color(0.2f, 0.2f, 0.2f));
+            MoveToCameraButton.ButtonText.fontSize = 13;
+            UIFactory.SetLayoutElement(MoveToCameraButton.Component.gameObject, minHeight: 25, minWidth: 120);
+            MoveToCameraButton.OnClick += () => {
+                if (FreeCamPanel.inFreeCamMode) {
+                    Transform freecamTransform = FreeCamPanel.GetFreecam().transform;
+                    this.Target.gameObject.transform.position = freecamTransform.position;
+                    this.Target.gameObject.transform.rotation = freecamTransform.rotation;
+                } else {
+                    ExplorerCore.LogWarning("Enable freecam before trying to move an object to the camera!");
+                }
+            };
+
             // second row (toggles, instanceID, tag, buttons)
 
             GameObject secondRow = UIFactory.CreateUIObject("ParentRow", topInfoHolder);

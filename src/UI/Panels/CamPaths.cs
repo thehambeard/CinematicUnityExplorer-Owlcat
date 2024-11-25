@@ -214,7 +214,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(fourthRow, minHeight: 25, flexibleWidth: 9999);
 
             saveLoadInputField = UIFactory.CreateInputField(fourthRow, "PathName", "File name");
-            UIFactory.SetLayoutElement(saveLoadInputField.GameObject, minWidth: 330, minHeight: 25);
+            UIFactory.SetLayoutElement(saveLoadInputField.GameObject, minWidth: 320, minHeight: 25);
 
             GameObject spacer1 = UIFactory.CreateUIObject("Spacer", fourthRow);
             LayoutElement spaceLayout1 = UIFactory.SetLayoutElement(spacer1, minWidth: 20, flexibleWidth: 0);
