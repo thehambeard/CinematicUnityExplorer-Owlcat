@@ -199,19 +199,19 @@ namespace UnityExplorer.UI.Panels
             }
 
             string filename = saveLoadinputField.Component.text;
-            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
+            if (filename.EndsWith(".cuepose") || filename.EndsWith(".CUEPOSE")) filename = filename.Substring(filename.Length-7);
             if (string.IsNullOrEmpty(filename)) filename = $"{animator?.name}-{DateTime.Now.ToString("yyyy-M-d HH-mm-ss")}";
             string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
             System.IO.Directory.CreateDirectory(posesPath);
 
             // Serialize
             string serializedData = BonesSerializer.Serialize(bonesTreeCache);
-            File.WriteAllText($"{posesPath}\\{filename}.xml", serializedData);
+            File.WriteAllText($"{posesPath}\\{filename}.cuepose", serializedData);
         }
 
         private void LoadBones(){
             string filename = saveLoadinputField.Component.text;
-            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
+            if (filename.EndsWith(".cuepose") || filename.EndsWith(".CUEPOSE")) filename = filename.Substring(filename.Length-7);
             if (string.IsNullOrEmpty(filename)){
                 ExplorerCore.LogWarning("Empty file name. Please write the name of the file to load.");
                 return;
@@ -220,7 +220,7 @@ namespace UnityExplorer.UI.Panels
             string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
             string xml;
             try {
-                xml = File.ReadAllText($"{posesPath}\\{filename}.xml");
+                xml = File.ReadAllText($"{posesPath}\\{filename}.cuepose");
             }
             catch (Exception ex) {
                 ExplorerCore.LogWarning(ex);

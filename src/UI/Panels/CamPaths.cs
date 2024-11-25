@@ -1,4 +1,6 @@
-﻿using UniverseLib.Input;
+﻿using UnityEngine.SceneManagement;
+using UnityExplorer.Serializers;
+using UniverseLib.Input;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 #if UNHOLLOWER
@@ -8,11 +10,6 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 using UniverseLib.UI.Widgets.ScrollView;
-
-using System.Collections.Generic;
-using UnityEngine;
-using System;
-using System.Collections;
 
 namespace UnityExplorer.UI.Panels
 {
@@ -51,6 +48,8 @@ namespace UnityExplorer.UI.Panels
 
         Toggle visualizePathToggle;
         public GameObject pathVisualizer;
+        Toggle closedLoopToggle;
+        InputFieldRef TimeInput;
 
         bool unpauseOnPlay;
         bool waitBeforePlay;
@@ -64,6 +63,9 @@ namespace UnityExplorer.UI.Panels
         InputFieldRef tensionCatmullRomInput;
         Slider tensionCatmullRomSlider;
         float tensionCatmullRomValue = 0;
+
+        private InputFieldRef saveLoadInputField;
+        private Toggle loadPathOnCamToggle;
 
         public ScrollPool<CamPathNodeCell> nodesScrollPool;
         public int ItemCount => controlPoints.Count;
@@ -133,14 +135,13 @@ namespace UnityExplorer.UI.Panels
                 MaybeRedrawPath();
             };
 
-            Toggle closedLoopToggle = new Toggle();
+            closedLoopToggle = new Toggle();
             GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
             UIFactory.SetLayoutElement(toggleClosedLoopObj, minHeight: 25, flexibleWidth: 9999);
             closedLoopToggle.isOn = false;
             closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null);});
             toggleClosedLoopText.text = "Close path in a loop";
 
-            InputFieldRef TimeInput = null;
             AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, 50, horiGroup);
             TimeInput.Text = time.ToString();
 
@@ -208,6 +209,29 @@ namespace UnityExplorer.UI.Panels
                 MaybeRedrawPath();
             });
 
+            GameObject fourthRow = UIFactory.CreateHorizontalGroup(ContentRoot, "SerializationOptions", false, false, true, true, 3,
+                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(fourthRow, minHeight: 25, flexibleWidth: 9999);
+
+            saveLoadInputField = UIFactory.CreateInputField(fourthRow, "PathName", "File name");
+            UIFactory.SetLayoutElement(saveLoadInputField.GameObject, minWidth: 330, minHeight: 25);
+
+            GameObject spacer1 = UIFactory.CreateUIObject("Spacer", fourthRow);
+            LayoutElement spaceLayout1 = UIFactory.SetLayoutElement(spacer1, minWidth: 20, flexibleWidth: 0);
+
+            ButtonRef savePath = UIFactory.CreateButton(fourthRow, "SavePathButton", "Save path");
+            UIFactory.SetLayoutElement(savePath.GameObject, minWidth: 100, minHeight: 25);
+            savePath.OnClick += SavePath;
+
+            ButtonRef loadPath = UIFactory.CreateButton(fourthRow, "LoadPathButton", "Load path");
+            UIFactory.SetLayoutElement(loadPath.GameObject, minWidth: 100, minHeight: 25);
+            loadPath.OnClick += LoadPath;
+
+            GameObject loadPathOnCamObj = UIFactory.CreateToggle(fourthRow, "Load path on cam", out loadPathOnCamToggle, out Text loadPathOnCamText);
+            UIFactory.SetLayoutElement(loadPathOnCamObj, minHeight: 25, flexibleWidth: 9999);
+            loadPathOnCamToggle.isOn = false;
+            loadPathOnCamText.text = "Load path starting on current camera state";
+
             nodesScrollPool = UIFactory.CreateScrollPool<CamPathNodeCell>(ContentRoot, "NodeList", out GameObject scrollObj,
                 out GameObject scrollContent, new Color(0.03f, 0.03f, 0.03f));
             UIFactory.SetLayoutElement(scrollObj, flexibleWidth: 9999, flexibleHeight: 9999);
@@ -215,8 +239,6 @@ namespace UnityExplorer.UI.Panels
 
         void AlphaCatmullRom_OnEndEdit(string input)
         {
-            EventSystemHelper.SetSelectedGameObject(null);
-
             if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
             {
                 ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
@@ -228,12 +250,11 @@ namespace UnityExplorer.UI.Panels
             alphaCatmullRomSlider.value = alphaCatmullRomValue;
 
             MaybeRedrawPath();
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void TensionCatmullRom_OnEndEdit(string input)
         {
-            EventSystemHelper.SetSelectedGameObject(null);
-
             if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
             {
                 ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
@@ -245,6 +266,7 @@ namespace UnityExplorer.UI.Panels
             tensionCatmullRomSlider.value = tensionCatmullRomValue;
 
             MaybeRedrawPath();
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         private void ToggleVisualizePath(bool enable){
@@ -376,7 +398,7 @@ namespace UnityExplorer.UI.Panels
         {
             EventSystemHelper.SetSelectedGameObject(null);
 
-            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
+            if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
             {
                 ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
                 return;
@@ -493,6 +515,91 @@ namespace UnityExplorer.UI.Panels
 
             GetCameraPathsManager().CalculateLookahead();
         }
+
+        private void SavePath(){
+            string filename = saveLoadInputField.Component.text;
+            if (filename.EndsWith(".cuepath") || filename.EndsWith(".CUEPATH")) filename = filename.Substring(filename.Length-7);
+            if (string.IsNullOrEmpty(filename)) filename = $"{DateTime.Now.ToString("yyyy-M-d HH-mm-ss")}";
+            string camPathsFolderPath = Path.Combine(ExplorerCore.ExplorerFolder, "CamPaths");
+            System.IO.Directory.CreateDirectory(camPathsFolderPath);
+
+            // Serialize
+            string serializedData = CamPathSerializer.Serialize(controlPoints, time, alphaCatmullRomValue, tensionCatmullRomValue, closedLoop, SceneManager.GetActiveScene().name);
+            File.WriteAllText($"{camPathsFolderPath}\\{filename}.cuepath", serializedData);
+        }
+
+        private void LoadPath(){
+            string filename = saveLoadInputField.Component.text;
+            if (filename.EndsWith(".cuepath") || filename.EndsWith(".CUEPATH")) filename = filename.Substring(filename.Length-7);
+            if (string.IsNullOrEmpty(filename)){
+                ExplorerCore.LogWarning("Empty file name. Please write the name of the file to load.");
+                return;
+            }
+
+            string camPathsFolderPath = Path.Combine(ExplorerCore.ExplorerFolder, "CamPaths");
+            string pathFile;
+            try {
+                pathFile = File.ReadAllText($"{camPathsFolderPath}\\{filename}.cuepath");
+            }
+            catch (Exception ex) {
+                ExplorerCore.LogWarning(ex);
+                return;
+            }
+            CamPathSerializeObject deserializedObj;
+            try {
+                deserializedObj = CamPathSerializer.Deserialize(pathFile);
+            }
+            catch (Exception ex) {
+                ExplorerCore.LogWarning(ex);
+                return;
+            }
+
+            if (deserializedObj.sceneName != SceneManager.GetActiveScene().name && !loadPathOnCamToggle.isOn) {
+                loadPathOnCamToggle.isOn = true;
+                ExplorerCore.LogWarning("Loaded a path on a different scene than the one it was saved on. Spawning it starting from the current camera state.");
+            }
+
+            // loadPathOnCamToggle check
+            if (loadPathOnCamToggle.isOn) {
+                
+                // We enable the freecam so we can use it to spawn the camera path relative to it
+                if (!FreeCamPanel.inFreeCamMode) {
+                    FreeCamPanel.StartStopButton_OnClick();
+                }
+
+                controlPoints.Clear();
+                // The first point will be the camera position, and we adapt the following points from there
+                AddNode_OnClick();
+
+                CatmullRom.CatmullRomPoint startingPoint = controlPoints.ElementAt(0);
+                CatmullRom.CatmullRomPoint originalStartingPoint = deserializedObj.points.ElementAt(0);
+                // We only want to use the camera pos and rotation, not the fov
+                startingPoint.fov = originalStartingPoint.fov;
+                controlPoints[0] = startingPoint;
+                
+                foreach (CatmullRom.CatmullRomPoint point in deserializedObj.points.Skip(1)) {
+                    CatmullRom.CatmullRomPoint newPoint = point;
+                    newPoint.position = startingPoint.position - originalStartingPoint.position + newPoint.position;
+                    newPoint.rotation = startingPoint.rotation * Quaternion.Inverse(originalStartingPoint.rotation) * newPoint.rotation;
+
+                    controlPoints.Add(newPoint);
+                }
+            } else {
+                controlPoints = deserializedObj.points;
+            }
+
+            TimeInput.Text = deserializedObj.time.ToString("0.00");
+            Time_OnEndEdit(TimeInput.Text);
+            alphaCatmullRomInput.Text = deserializedObj.alpha.ToString("0.00");
+            AlphaCatmullRom_OnEndEdit(alphaCatmullRomInput.Text);
+            tensionCatmullRomInput.Text = deserializedObj.tension.ToString("0.00");
+            TensionCatmullRom_OnEndEdit(tensionCatmullRomInput.Text);
+            closedLoopToggle.isOn = deserializedObj.closePath;
+
+            // Update nodes
+            nodesScrollPool.Refresh(true, false);
+        }
+
     }
 
     public class CamPointsUpdater : MonoBehaviour
