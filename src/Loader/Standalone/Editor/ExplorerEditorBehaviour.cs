@@ -8,6 +8,7 @@ using System.Text;
 using UnityEngine;
 using UnityExplorer.Config;
 using UnityExplorer.UI;
+using UnityExplorer.UI.Panels;
 using UniverseLib;
 
 namespace UnityExplorer.Loader.Standalone
