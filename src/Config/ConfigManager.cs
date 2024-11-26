@@ -31,6 +31,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<string> Reflection_Signature_Blacklist;
         public static ConfigElement<bool> Reflection_Hide_NativeInfoPtrs;
         public static ConfigElement<bool> Auto_Scale_UI;
+        public static ConfigElement<bool> Reset_Camera_Transform;
 
         public static ConfigElement<FreeCamPanel.FreeCameraType> Default_Freecam;
         public static ConfigElement<KeyCode> Pause;
@@ -185,6 +186,10 @@ namespace UnityExplorer.Config
             Auto_Scale_UI = new("Make the mod UI automatically scale with resolution",
                 "Especially useful when running games in high resolutions and you are having a hard time reading the mods menu (requires restart).",
                 true);
+            
+            Reset_Camera_Transform = new("Reset Camera transform on freecam disable",
+                "Reset the camera position and rotation between freecam sessions, so the freecam always starts from the gameplay position and rotation.",
+                false);
 
             Default_Freecam = new("Default Freecam mode",
                 "Default type of freecam selected on startup.",

@@ -243,7 +243,7 @@ namespace UnityExplorer.UI.Panels
             ourCamera.enabled = true;
 
             string currentScene = SceneManager.GetActiveScene().name;
-            if (lastScene != currentScene){
+            if (lastScene != currentScene || ConfigManager.Reset_Camera_Transform.Value){
                 OnResetPosButtonClicked();
             }
             lastScene = currentScene;

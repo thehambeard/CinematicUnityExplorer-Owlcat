@@ -26,6 +26,9 @@ namespace UnityExplorer.Loader.Standalone
         public bool Force_Unlock_Mouse = true;
         public KeyCode Force_Unlock_Toggle;
         public bool Disable_EventSystem_Override;
+        public bool Auto_Scale_UI;
+        public bool Reset_Camera_Transform;
+        public FreeCamPanel.FreeCameraType Default_Freecam;
 
         public KeyCode Pause;
         public KeyCode Frameskip;
@@ -80,6 +83,9 @@ namespace UnityExplorer.Loader.Standalone
             ConfigManager.Force_Unlock_Mouse.Value = this.Force_Unlock_Mouse;
             ConfigManager.Force_Unlock_Toggle.Value = this.Force_Unlock_Toggle;
             ConfigManager.Disable_EventSystem_Override.Value = this.Disable_EventSystem_Override;
+            ConfigManager.Auto_Scale_UI.Value = this.Auto_Scale_UI;
+            ConfigManager.Reset_Camera_Transform.Value = this.Reset_Camera_Transform;
+            ConfigManager.Default_Freecam.Value = this.Default_Freecam;
 
             ConfigManager.Pause.Value = this.Pause;
             ConfigManager.Frameskip.Value = this.Frameskip;
