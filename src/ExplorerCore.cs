@@ -205,6 +205,8 @@ namespace UnityExplorer
             foreach (CanvasScaler scaler in canvasScalers)
             {
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+                scaler.matchWidthOrHeight = 0f;
             }
         }
     }
