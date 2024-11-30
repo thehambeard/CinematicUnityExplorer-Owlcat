@@ -73,7 +73,7 @@ namespace UnityExplorer.UI.Panels
         public static Toggle blockGamesInputOnFreecamToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
-        static Text followObjectLabel;
+        static Text followLookAtObjectLabel;
         static ButtonRef inspectButton;
         public static Toggle followRotationToggle;
         static bool disabledCinemachine;
@@ -89,6 +89,7 @@ namespace UnityExplorer.UI.Panels
         static float farClipPlaneValue;
 
         public static GameObject followObject = null;
+        public static GameObject lookAtObject = null;
         public static Vector3 followObjectLastPosition = Vector3.zero;
         public static Quaternion followObjectLastRotation = Quaternion.identity;
 
@@ -472,8 +473,8 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
-            UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
+            followLookAtObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowLookAtObject", "Not following/looking at any object.");
+            UIFactory.SetLayoutElement(followLookAtObjectLabel.gameObject, minWidth: 150, minHeight: 25);
 
             GameObject followObjectRow = UIFactory.CreateHorizontalGroup(ContentRoot, $"FollowObjectRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
 
@@ -481,12 +482,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followButton.OnClick += FollowButton_OnClick;
 
-            ButtonRef releaseFollowButton = UIFactory.CreateButton(followObjectRow, "ReleaseFollowButton", "Release Follow GameObject");
-            UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
-            releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
-
-            GameObject followRotationGameObject = UIFactory.CreateToggle(ContentRoot, "followRotationToggle", out followRotationToggle, out Text followRotationText);
-            UIFactory.SetLayoutElement(followRotationGameObject, minHeight: 25, flexibleWidth: 9999);
+            GameObject followRotationGameObject = UIFactory.CreateToggle(followObjectRow, "followRotationToggle", out followRotationToggle, out Text followRotationText);
+            UIFactory.SetLayoutElement(followRotationGameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followRotationToggle.isOn = false;
             followRotationText.text = "Follow Object Rotation";
             followRotationToggle.onValueChanged.AddListener((value) => {
@@ -502,6 +499,16 @@ namespace UnityExplorer.UI.Panels
                     CamPathsPanel.MaybeRedrawPath();
                 }
             });
+
+            GameObject lookAtObjectRow = UIFactory.CreateHorizontalGroup(ContentRoot, $"LookAtObjectRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            ButtonRef lookAtButton = UIFactory.CreateButton(lookAtObjectRow, "LookAtButton", "Look At GameObject");
+            UIFactory.SetLayoutElement(lookAtButton.GameObject, minWidth: 140, minHeight: 25, flexibleWidth: 9999);
+            lookAtButton.OnClick += LookAtButton_OnClick;
+
+            ButtonRef releaseFollowLookAtButton = UIFactory.CreateButton(lookAtObjectRow, "ReleaseFollowLookAtButton", "Release Follow/Look At");
+            UIFactory.SetLayoutElement(releaseFollowLookAtButton.GameObject, minWidth: 160, minHeight: 25, flexibleWidth: 9999);
+            releaseFollowLookAtButton.OnClick += ReleaseFollowLookAtButton_OnClick;
 
             AddSpacer(5);
 
@@ -573,6 +580,8 @@ namespace UnityExplorer.UI.Panels
         }
 
         public static void FollowObjectAction(GameObject obj){
+            ReleaseFollowLookAtButton_OnClick();
+
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
             if (followObject != null){
@@ -582,7 +591,7 @@ namespace UnityExplorer.UI.Panels
             followObject = obj;
             followObjectLastPosition = followObject.transform.position;
             followObjectLastRotation = followObject.transform.rotation;
-            followObjectLabel.text = $"Following: {obj.name}";
+            followLookAtObjectLabel.text = $"Following: {obj.name}";
             
             CamPathsPanel.UpdatedFollowObject(obj);
 
@@ -596,19 +605,30 @@ namespace UnityExplorer.UI.Panels
             MouseInspector.Instance.StartInspect(MouseInspectMode.World, FollowObjectAction);
         }
 
-        void ReleaseFollowButton_OnClick()
+        public static void LookAtObjectAction(GameObject obj){
+            ReleaseFollowLookAtButton_OnClick();
+            lookAtObject = obj;
+            followLookAtObjectLabel.text = $"Looking at: {obj.name}";
+        }
+
+        void LookAtButton_OnClick()
         {
-            if (followObject){
-                followObject = null;
-                followObjectLastPosition = Vector3.zero;
-                followObjectLastRotation = Quaternion.identity;
-                followObjectLabel.text = "Not following any object";
+            MouseInspector.Instance.StartInspect(MouseInspectMode.World, LookAtObjectAction);
+        }
+
+        static void ReleaseFollowLookAtButton_OnClick()
+        {
+            if (followObject != null){
+                CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+                CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
+                CamPathsPanel.UpdatedFollowObject(null);
             }
-            CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
-            CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
-
-            CamPathsPanel.UpdatedFollowObject(null);
+            lookAtObject = null;
+            followObject = null;
+            followObjectLastPosition = Vector3.zero;
+            followObjectLastRotation = Quaternion.identity;
+            followLookAtObjectLabel.text = "Not following/looking at any object";
         }
 
         static void SetToggleButtonState()
@@ -765,6 +785,9 @@ namespace UnityExplorer.UI.Panels
 
         public static void SetCameraRotation(Quaternion newRotation, bool isAbsolute = false){
             Camera freecam = GetFreecam();
+            if (lookAtObject){
+                return;
+            }
             if (isAbsolute){
                 freecam.transform.rotation = newRotation;
             }
@@ -832,6 +855,11 @@ namespace UnityExplorer.UI.Panels
                 FreeCamPanel.connector?.ExecuteCameraCommand(FreeCamPanel.GetFreecam());
 
                 FreeCamPanel.UpdatePositionInput();
+
+                if (FreeCamPanel.lookAtObject != null)
+                {
+                    movingTransform.LookAt(FreeCamPanel.lookAtObject.transform);
+                }
             }
         }
 
