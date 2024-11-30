@@ -559,7 +559,6 @@ namespace UnityExplorer.UI.Panels
                 ExplorerCore.LogWarning("Loaded a path on a different scene than the one it was saved on. Spawning it starting from the current camera state.");
             }
 
-            // loadPathOnCamToggle check
             if (loadPathOnCamToggle.isOn) {
                 
                 // We enable the freecam so we can use it to spawn the camera path relative to it
@@ -579,8 +578,10 @@ namespace UnityExplorer.UI.Panels
                 
                 foreach (CatmullRom.CatmullRomPoint point in deserializedObj.points.Skip(1)) {
                     CatmullRom.CatmullRomPoint newPoint = point;
-                    newPoint.position = startingPoint.position - originalStartingPoint.position + newPoint.position;
-                    newPoint.rotation = startingPoint.rotation * Quaternion.Inverse(originalStartingPoint.rotation) * newPoint.rotation;
+
+                    Quaternion offsetRot = startingPoint.rotation * Quaternion.Inverse(originalStartingPoint.rotation);
+                    newPoint.position = offsetRot * (newPoint.position - originalStartingPoint.position) + startingPoint.position;
+                    newPoint.rotation = offsetRot * newPoint.rotation;
 
                     controlPoints.Add(newPoint);
                 }
