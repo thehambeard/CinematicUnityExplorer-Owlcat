@@ -734,6 +734,11 @@ namespace UnityExplorer.UI.Panels
             UpdateClippingPlanes();
         }
 
+        public static bool IsConnectorActive()
+        {
+            return FreeCamPanel.connector != null && FreeCamPanel.connector.IsActive;
+        }
+
         public static bool ShouldOverrideInput(){
             return inFreeCamMode && blockGamesInputOnFreecamToggle.isOn;
         }
@@ -849,17 +854,17 @@ namespace UnityExplorer.UI.Panels
                     FreeCamPanel.followObjectLastRotation = FreeCamPanel.followObject.transform.rotation;
                 }
 
+                if (FreeCamPanel.lookAtObject != null && !FreeCamPanel.IsConnectorActive())
+                {
+                    movingTransform.LookAt(FreeCamPanel.lookAtObject.transform);
+                }
+
                 UpdateRelativeMatrix();
                 UpdateRealCamera();
 
                 FreeCamPanel.connector?.ExecuteCameraCommand(FreeCamPanel.GetFreecam());
 
                 FreeCamPanel.UpdatePositionInput();
-
-                if (FreeCamPanel.lookAtObject != null)
-                {
-                    movingTransform.LookAt(FreeCamPanel.lookAtObject.transform);
-                }
             }
         }
 
