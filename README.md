@@ -136,6 +136,7 @@ The original Unity Explorer had a Freecam feature, but even if it was useful at 
 - Added tilt support.
 - Added FOV control support.
 - Added near and far clip sliders on the Freecam panel, to cut out objects near the camera out of view, or include more scene objects on sight.
+- Added new freecam methods to increase compatibility across games.
 - Automatically disable the Cinemachine component if present when using the gameplay camera, to avoid the game from trying to take control.
 - Added a toggle to block the freecam from moving with user input.
 - Unlocked the mouse on freecam even when the mod UI is hidden.
@@ -146,6 +147,10 @@ The original Unity Explorer had a Freecam feature, but even if it was useful at 
 You can click on the "Follow object" button on the panel and select the object you want the camera to follow or click on the "Follow object" button in the inspector screen for more granularity. This can be used as it is, but it's even more useful when playing with [camera paths](#camera-paths), as you can create a path for the camera to walk relative to the object
 
 By default the camera only follows the object's position, but you can also make it follow its rotation as if the camera was physically bound to the object by checking the "Follow Object Rotation" toggle. Should be useful for mimicking a car camera, a character POV, or creating motion blur.
+
+### Look At Object
+
+As a side note, you can also "look at" a specific object in the world to force the camera to look directly toward it no matter the camera movement.
 
 ### Game input block for Unity's legacy system
 Added game input block for Unity's legacy system. You can now block (or unblock) the game's input when using the freecam, as long as the game is using the Unity Legacy Input system. If the game uses a custom solution or the latest Unity system then this won't work. Implementing this for Unity's new system is in the backlog, so if you find a game using it (should say "Initialized new InputSystem support." on the logs) then please let me know so I can implement it using that game!
@@ -188,6 +193,7 @@ It allows you to create nodes to build camera paths for videos and cinematics. F
 - Wait 3 seconds before start toggler.
 - Move nodes up or down on the list.
 - Control over the tension and alpha values of the path, which are curve constants that change the resulting path created from the nodes. Their effect can be clearly seen when visualizing the path, as explained below.
+- Saving and loading camera paths to reuse them in different sessions.
 
 As a side note, the mod UI will be disabled once the path starts, to ease video recording.
 
@@ -211,6 +217,8 @@ Alongside all of this, you can also open each character game object by clicking 
 ### Bones Panel
 
 For each animator, you can also spawn a Bones Panel. This panel will list all of the character's bones and meshes, and provide easy-to-access toggles to disable them and sliders to move them around, allowing you to pose a character to your liking.
+
+You can also save and load poses across different characters (if they have the same skeleton) and sessions.
 
 ## Misc Panel
 - HUD toggle.
