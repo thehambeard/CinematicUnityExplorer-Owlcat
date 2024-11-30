@@ -123,7 +123,7 @@ namespace UnityExplorer.UI.Panels
             if (lodBias == null){
                 Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
                 lodBias = qualitySettingsType.GetProperty("lodBias");
-                _defaultLodBias = (float)lodBias.GetValue(null);
+                _defaultLodBias = (float)lodBias.GetValue(null, null);
             }
             lodBias.SetValue(null, areHighLodsOn ? 10000 : _defaultLodBias, null);
         }
