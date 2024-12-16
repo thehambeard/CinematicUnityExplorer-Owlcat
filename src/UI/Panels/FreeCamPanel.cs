@@ -834,7 +834,7 @@ namespace UnityExplorer.UI.Panels
                 }
                 Transform movingTransform = FreeCamPanel.GetFreecam().transform;
 
-                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && FreeCamPanel.connector?.IsActive != true) {
+                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && FreeCamPanel.connector?.IsActive != true && !IsInputFieldInFocus()) {
                     ProcessInput(movingTransform);
                 }
 
@@ -866,6 +866,20 @@ namespace UnityExplorer.UI.Panels
 
                 FreeCamPanel.UpdatePositionInput();
             }
+        }
+
+        private bool IsInputFieldInFocus()
+        {
+            GameObject currentObject = EventSystemHelper.CurrentEventSystem.currentSelectedGameObject;
+            if (currentObject != null)
+            {
+                UnityEngine.UI.InputField selectedInputField = currentObject.GetComponent<UnityEngine.UI.InputField>();
+                if (selectedInputField != null)
+                {
+                    return selectedInputField.isFocused;
+                }
+            }
+            return false;
         }
 
         private void OnPreCull()
