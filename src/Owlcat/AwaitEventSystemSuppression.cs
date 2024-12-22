@@ -12,10 +12,8 @@ static class AwaitEventSystemSuppression
         var array = instructions.ToArray();
         for (var i = 1; i < array.Length; i++)
         {
-            var test = AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string), typeof(object[])]);
-
             if (array[i - 1].opcode == OpCodes.Ldstr &&
-                array[i].Calls(AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string), typeof(object[])])))
+                array[i].Calls(AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string)]))) 
             {
                 Main.Logger.Log($"Silencing \"{array[i - 1].operand}\"");
 
