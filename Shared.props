@@ -1,6 +1,6 @@
 <Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' InitialTargets="GenerateCustomPropsFile">
 	<PropertyGroup>
-		<Version>1.0.3</Version>
+		<Version>1.1.0</Version>
 		<TargetFramework>net481</TargetFramework>
 		<DefineConstants>MONO,STANDALONE</DefineConstants>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
