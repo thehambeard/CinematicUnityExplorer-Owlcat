@@ -6,7 +6,7 @@
 
         internal static void Init()
         {
-            TryPatch<Canvas>("get_renderingDisplaySize", nameof(Canvas_renderingDisplaySize_Prefix));
+            TryPatch<Canvas>(nameof(Canvas.renderingDisplaySize), nameof(Canvas_renderingDisplaySize_Prefix));
 
             IEnumerable<MethodBase> patched = harmony.GetPatchedMethods();
             if (patched.Any())
@@ -19,7 +19,7 @@
             try
             {
                 harmony.Patch(
-                    HarmonyLib.AccessTools.Method(typeof(T), orig, argTypes),
+                    HarmonyLib.AccessTools.PropertyGetter(typeof(T), orig),
                     new HarmonyLib.HarmonyMethod(HarmonyLib.AccessTools.Method(typeof(UnityCrashPrevention), prefix)));
             }
             catch //(Exception ex)
@@ -31,6 +31,7 @@
         // In Unity 2020 they introduced "Canvas.renderingDisplaySize".
         // If you try to get the value on a Canvas which has a renderMode value of WorldSpace and no worldCamera set,
         // the game will Crash (I think from Unity trying to read from null ptr).
+
         internal static void Canvas_renderingDisplaySize_Prefix(Canvas __instance)
         {
             if (__instance.renderMode == RenderMode.WorldSpace && !__instance.worldCamera)

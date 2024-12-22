@@ -19,6 +19,7 @@ namespace UnityExplorer.UI.Widgets
 
         ButtonRef ViewParentButton;
         ButtonRef FollowObjectButton;
+        ButtonRef LookAtObjectButton;
         InputFieldRef PathInput;
 
         InputFieldRef NameInput;
@@ -295,6 +296,11 @@ namespace UnityExplorer.UI.Widgets
             UIFactory.SetLayoutElement(FollowObjectButton.Component.gameObject, minHeight: 25, minWidth: 100);
             FollowObjectButton.OnClick += () => FreeCamPanel.FollowObjectAction(this.Target.gameObject);
 
+            LookAtObjectButton = UIFactory.CreateButton(firstRow, "LookAtObjectButton", "Look at object with Freecam", new Color(0.2f, 0.2f, 0.2f));
+            LookAtObjectButton.ButtonText.fontSize = 13;
+            UIFactory.SetLayoutElement(LookAtObjectButton.Component.gameObject, minHeight: 25, minWidth: 100);
+            LookAtObjectButton.OnClick += () => FreeCamPanel.LookAtObjectAction(this.Target.gameObject);
+
             this.PathInput = UIFactory.CreateInputField(firstRow, "PathInput", "...");
             PathInput.Component.textComponent.color = Color.grey;
             PathInput.Component.textComponent.fontSize = 14;
@@ -323,6 +329,23 @@ namespace UnityExplorer.UI.Widgets
             UIFactory.SetLayoutElement(NameInput.Component.gameObject, minHeight: 30, minWidth: 100, flexibleWidth: 9999);
             NameInput.Component.textComponent.fontSize = 15;
             NameInput.Component.GetOnEndEdit().AddListener((string val) => { OnNameEndEdit(val); });
+
+            ButtonRef MoveToCameraButton = UIFactory.CreateButton(titleRow, "MoveToCameraButton", "Move to Camera", new Color(0.2f, 0.2f, 0.2f));
+            MoveToCameraButton.ButtonText.fontSize = 13;
+            UIFactory.SetLayoutElement(MoveToCameraButton.Component.gameObject, minHeight: 25, minWidth: 120);
+            MoveToCameraButton.OnClick += () =>
+            {
+                if (FreeCamPanel.inFreeCamMode)
+                {
+                    Transform freecamTransform = FreeCamPanel.GetFreecam().transform;
+                    this.Target.gameObject.transform.position = freecamTransform.position;
+                    this.Target.gameObject.transform.rotation = freecamTransform.rotation;
+                }
+                else
+                {
+                    ExplorerCore.LogWarning("Enable freecam before trying to move an object to the camera!");
+                }
+            };
 
             // second row (toggles, instanceID, tag, buttons)
 

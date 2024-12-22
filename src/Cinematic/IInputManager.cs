@@ -2,12 +2,6 @@ using HarmonyLib;
 using UnityExplorer;
 using UnityExplorer.UI;
 using UnityExplorer.UI.Panels;
-#if UNHOLLOWER
-using IL2CPPUtils = UnhollowerBaseLib.UnhollowerUtils;
-#endif
-#if INTEROP
-using IL2CPPUtils = Il2CppInterop.Common.Il2CppInteropUtils;
-#endif
 
 namespace UniverseLib.Input
 {
@@ -161,10 +155,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyTarget = t_Input.GetMethod("GetKey", new Type[] { typeof(string) });
                 //ExplorerCore.LogWarning(getKeyTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getKeyTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyString))));
             }
@@ -174,10 +165,6 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyTarget = t_Input.GetMethod("GetKey", new Type[] { typeof(KeyCode) });
                 //ExplorerCore.LogWarning(getKeyTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyTarget) == null)
-                    throw new Exception();
-#endif
                 ExplorerCore.Harmony.Patch(getKeyTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyKeyCode))));
             }
@@ -187,10 +174,6 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyDownTarget = t_Input.GetMethod("GetKeyDown", new Type[] { typeof(string) });
                 //ExplorerCore.LogWarning(getKeyDownTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyDownTarget) == null)
-                    throw new Exception();
-#endif
                 ExplorerCore.Harmony.Patch(getKeyDownTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyDownString))));
             }
@@ -200,10 +183,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyDownTarget = t_Input.GetMethod("GetKeyDown", new Type[] { typeof(KeyCode) });
                 //ExplorerCore.LogWarning(getKeyDownTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyDownTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getKeyDownTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyDownKeyCode))));
             }
@@ -213,10 +193,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyUpTarget = t_Input.GetMethod("GetKeyUp", new Type[] { typeof(string) });
                 //ExplorerCore.LogWarning(getKeyUpTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyUpTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getKeyUpTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyUpString))));
             }
@@ -226,10 +203,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getKeyUpTarget = t_Input.GetMethod("GetKeyUp", new Type[] { typeof(KeyCode) });
                 //ExplorerCore.LogWarning(getKeyUpTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyUpTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getKeyUpTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideKeyUpKeyCode))));
             }
@@ -239,10 +213,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getMouseButtonTarget = t_Input.GetMethod("GetMouseButton", new Type[] { typeof(int) });
                 //ExplorerCore.LogWarning(getMouseButtonTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getMouseButtonTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getMouseButtonTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideMouseButton))));
             }
@@ -252,10 +223,7 @@ namespace UniverseLib.Input
             {
                 MethodInfo getMouseButtonDownTarget = t_Input.GetMethod("GetMouseButtonDown", new Type[] { typeof(int) });
                 //ExplorerCore.LogWarning(getMouseButtonDownTarget);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getMouseButtonDownTarget) == null)
-                    throw new Exception();
-#endif
+
                 ExplorerCore.Harmony.Patch(getMouseButtonDownTarget,
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideMouseButtonDown))));
             }

@@ -31,6 +31,7 @@ namespace UniverseLib.UI.Panels
 
         // Resizing
         public bool WasResizing { get; internal set; }
+
         private bool WasHoveringResize => CursorController.IsResizeCursor;
 
         private ResizeTypes currentResizeType = ResizeTypes.NONE;

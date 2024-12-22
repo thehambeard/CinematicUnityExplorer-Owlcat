@@ -9,7 +9,7 @@ namespace CinematicUnityExplorer;
 
 static class Main
 {
-    internal static Harmony HarmonyInstance {get; private set;}
+    internal static Harmony HarmonyInstance { get; private set; }
     internal static UnityModManager.ModEntry.ModLogger Logger { get; private set; }
     internal static UnityModManager.ModEntry ModEntry { get; private set; }
 

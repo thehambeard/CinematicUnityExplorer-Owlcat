@@ -1,14 +1,12 @@
-﻿
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using UnityEngine;
-namespace UnityExplorer.UI {
-    public class SecondaryDisplayHelper {
+﻿using System.Runtime.InteropServices;
+namespace UnityExplorer.UI
+{
+    public class SecondaryDisplayHelper
+    {
         public static Dictionary<int, int> DisplayTohWnd = new();
         public static HashSet<int> PreviouslyActiatedDisplays = new();
-        public enum ShowStates {
+        public enum ShowStates
+        {
             Hide = 0,
             Normal = 1,
             Minimized = 2,
@@ -31,20 +29,27 @@ namespace UnityExplorer.UI {
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        public static void DeactivateAdditionalDisplay() {
+        public static void DeactivateAdditionalDisplay()
+        {
             PreviouslyActiatedDisplays.Add(DisplayManager.ActiveDisplayIndex);
             var hWnd = FindWindow(null, "Unity Secondary Display").ToInt32();
-            if (hWnd != 0) {
+            if (hWnd != 0)
+            {
                 DisplayTohWnd[DisplayManager.ActiveDisplayIndex] = hWnd;
                 ShowWindowAsync(hWnd, SW_HIDE);
             }
         }
-        public static void ActivateAdditionalDisplay() {
-            if (PreviouslyActiatedDisplays.Contains(DisplayManager.ActiveDisplayIndex)) {
-                if (DisplayTohWnd.TryGetValue(DisplayManager.ActiveDisplayIndex, out var hWnd)) {
+        public static void ActivateAdditionalDisplay()
+        {
+            if (PreviouslyActiatedDisplays.Contains(DisplayManager.ActiveDisplayIndex))
+            {
+                if (DisplayTohWnd.TryGetValue(DisplayManager.ActiveDisplayIndex, out var hWnd))
+                {
                     ShowWindowAsync(hWnd, SW_SHOW);
                 }
-            } else {
+            }
+            else
+            {
                 DisplayManager.ActiveDisplay.Activate();
             }
         }

@@ -17,6 +17,14 @@ namespace UnityExplorer.UI.Panels
 {
     public class FreeCamPanel : UEPanel
     {
+        public enum FreeCameraType
+        {
+            New,
+            Gameplay,
+            Cloned,
+            ForcedMatrix,
+        }
+
         public FreeCamPanel(UIBase owner) : base(owner)
         {
             try
@@ -39,9 +47,9 @@ namespace UnityExplorer.UI.Panels
         public override bool ShouldSaveActiveState => true;
 
         internal static bool inFreeCamMode;
-        internal static bool usingGameCamera;
         public static Camera ourCamera;
         public static Camera lastMainCamera;
+        public static Camera cameraMatrixOverrider;
         internal static FreeCamBehaviour freeCamScript;
         internal static CatmullRom.CatmullRomMover cameraPathMover;
 
@@ -54,18 +62,20 @@ namespace UnityExplorer.UI.Panels
 
         internal static Vector3? currentUserCameraPosition;
         internal static Quaternion? currentUserCameraRotation;
+        internal static float currentUserCameraFov;
 
         internal static Vector3 previousMousePosition;
 
         internal static Vector3 lastSetCameraPosition;
 
         static ButtonRef startStopButton;
-        public static Toggle useGameCameraToggle;
+        public static Dropdown cameraTypeDropdown;
+        internal static FreeCameraType currentCameraType;
         public static Toggle blockFreecamMovementToggle;
         public static Toggle blockGamesInputOnFreecamToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
-        static Text followObjectLabel;
+        static Text followLookAtObjectLabel;
         static ButtonRef inspectButton;
         public static Toggle followRotationToggle;
         static bool disabledCinemachine;
@@ -81,6 +91,7 @@ namespace UnityExplorer.UI.Panels
         static float farClipPlaneValue;
 
         public static GameObject followObject = null;
+        public static GameObject lookAtObject = null;
         public static Vector3 followObjectLastPosition = Vector3.zero;
         public static Quaternion followObjectLastRotation = Quaternion.identity;
 
@@ -120,6 +131,7 @@ namespace UnityExplorer.UI.Panels
                 {
                     currentUserCameraPosition = currentMain.transform.position;
                     currentUserCameraRotation = currentMain.transform.rotation;
+                    currentUserCameraFov = currentMain.fieldOfView;
                 }
             }
             else
@@ -128,39 +140,97 @@ namespace UnityExplorer.UI.Panels
 
         static void SetupFreeCamera()
         {
-            if (useGameCameraToggle.isOn)
+            switch ((FreeCameraType)cameraTypeDropdown.value)
             {
-                if (!lastMainCamera)
-                {
-                    ExplorerCore.LogWarning($"There is no previous Camera found, reverting to default Free Cam.");
-                    useGameCameraToggle.isOn = false;
-                }
-                else
-                {
-                    usingGameCamera = true;
-                    ourCamera = lastMainCamera;
-                    MaybeToggleCinemachine(false);
-
-                    // If the farClipPlaneValue is the default one try to use the one from the gameplay camera
-                    if (farClipPlaneValue == 2000)
+                case FreeCameraType.Gameplay:
+                    if (!lastMainCamera)
                     {
-                        farClipPlaneValue = ourCamera.farClipPlane;
-                        farClipPlaneInput.Text = farClipPlaneValue.ToString();
-                        // Let the default farClipPlane value exceed the slider max value
-                        if (farClipPlaneValue <= farClipPlaneSlider.maxValue)
-                            farClipPlaneSlider.value = farClipPlaneValue;
+                        ExplorerCore.LogWarning($"There is no previous Camera found, reverting to New Free Cam.");
+                        cameraTypeDropdown.value = (int)FreeCameraType.New;
                     }
-                }
+                    else
+                    {
+                        currentCameraType = FreeCameraType.Gameplay;
+                        ourCamera = lastMainCamera;
+                        MaybeToggleCinemachine(false);
+
+                        // If the farClipPlaneValue is the default one try to use the one from the gameplay camera
+                        if (farClipPlaneValue == 2000)
+                        {
+                            farClipPlaneValue = ourCamera.farClipPlane;
+                            farClipPlaneInput.Text = farClipPlaneValue.ToString();
+                            // Let the default farClipPlane value exceed the slider max value
+                            if (farClipPlaneValue <= farClipPlaneSlider.maxValue)
+                                farClipPlaneSlider.value = farClipPlaneValue;
+                        }
+                    }
+                    break;
+                case FreeCameraType.New:
+                    currentCameraType = FreeCameraType.New;
+
+                    if (lastMainCamera)
+                    {
+                        lastMainCamera.enabled = false;
+                    }
+
+                    ourCamera = new GameObject("UE_Freecam").AddComponent<Camera>();
+                    ourCamera.gameObject.tag = "MainCamera";
+                    GameObject.DontDestroyOnLoad(ourCamera.gameObject);
+                    ourCamera.gameObject.hideFlags = HideFlags.HideAndDontSave;
+
+                    break;
+                case FreeCameraType.Cloned:
+                    if (!lastMainCamera)
+                    {
+                        ExplorerCore.LogWarning($"There is no previous Camera found, reverting to New Free Cam.");
+                        cameraTypeDropdown.value = (int)FreeCameraType.New;
+                    }
+                    else
+                    {
+                        currentCameraType = FreeCameraType.Cloned;
+
+                        ourCamera = GameObject.Instantiate(lastMainCamera);
+                        lastMainCamera.enabled = false;
+                        MaybeToggleCinemachine(false);
+
+                        // If the farClipPlaneValue is the default one try to use the one from the gameplay camera
+                        if (farClipPlaneValue == 2000)
+                        {
+                            farClipPlaneValue = ourCamera.farClipPlane;
+                            farClipPlaneInput.Text = farClipPlaneValue.ToString();
+                            // Let the default farClipPlane value exceed the slider max value
+                            if (farClipPlaneValue <= farClipPlaneSlider.maxValue)
+                                farClipPlaneSlider.value = farClipPlaneValue;
+                        }
+                    }
+                    break;
+                case FreeCameraType.ForcedMatrix:
+                    if (!lastMainCamera)
+                    {
+                        ExplorerCore.LogWarning($"There is no previous Camera found, reverting to New Free Cam.");
+                        cameraTypeDropdown.value = (int)FreeCameraType.New;
+                    }
+                    else
+                    {
+                        currentCameraType = FreeCameraType.ForcedMatrix;
+                        ourCamera = lastMainCamera;
+                        // HDRP might introduce problems when moving the camera when replacing the worldToCameraMatrix,
+                        // so we will try to move the real camera as well.
+                        MaybeToggleCinemachine(false);
+
+                        cameraMatrixOverrider = new GameObject("[CUE] Camera Matrix Overrider").AddComponent<Camera>();
+                        cameraMatrixOverrider.enabled = false;
+                        cameraMatrixOverrider.transform.position = lastMainCamera.transform.position;
+                        cameraMatrixOverrider.transform.rotation = lastMainCamera.transform.rotation;
+                    }
+
+                    break;
+                default:
+                    ExplorerCore.LogWarning($"Error: Camera type not implemented");
+                    break;
             }
 
-            if (!useGameCameraToggle.isOn)
-            {
-                usingGameCamera = false;
-
-                if (lastMainCamera)
-                    lastMainCamera.enabled = false;
-            }
-
+            // Fallback in case we couldn't find the main camera for some reason
             if (!ourCamera)
             {
                 ourCamera = new GameObject("UE_Freecam").AddComponent<Camera>();
@@ -175,14 +245,15 @@ namespace UnityExplorer.UI.Panels
             if (!cameraPathMover)
                 cameraPathMover = ourCamera.gameObject.AddComponent<CatmullRom.CatmullRomMover>();
 
-            ourCamera.transform.position = (Vector3)currentUserCameraPosition;
-            ourCamera.transform.rotation = (Quaternion)currentUserCameraRotation;
+            GetFreecam().transform.position = (Vector3)currentUserCameraPosition;
+            GetFreecam().transform.rotation = (Quaternion)currentUserCameraRotation;
+            SetFOV(currentUserCameraFov);
 
             ourCamera.gameObject.SetActive(true);
             ourCamera.enabled = true;
 
             string currentScene = SceneManager.GetActiveScene().name;
-            if (lastScene != currentScene)
+            if (lastScene != currentScene || ConfigManager.Reset_Camera_Transform.Value)
             {
                 OnResetPosButtonClicked();
             }
@@ -194,18 +265,42 @@ namespace UnityExplorer.UI.Panels
             inFreeCamMode = false;
             connector?.UpdateFreecamStatus(false);
 
-            if (usingGameCamera)
+            switch (currentCameraType)
             {
+                case FreeCameraType.Gameplay:
+                    MaybeToggleCinemachine(true);
+                    ourCamera = null;
 
-                MaybeToggleCinemachine(true);
-                ourCamera = null;
+                    if (lastMainCamera)
+                    {
+                        lastMainCamera.transform.position = originalCameraPosition;
+                        lastMainCamera.transform.rotation = originalCameraRotation;
+                        lastMainCamera.fieldOfView = originalCameraFOV;
+                    }
+                    break;
+                case FreeCameraType.New:
+                    GameObject.Destroy(ourCamera.gameObject);
+                    ourCamera = null;
+                    break;
+                case FreeCameraType.Cloned:
+                    GameObject.Destroy(ourCamera.gameObject);
+                    ourCamera = null;
+                    break;
+                case FreeCameraType.ForcedMatrix:
+                    MaybeToggleCinemachine(true);
+                    MethodInfo resetCullingMatrixMethod = typeof(Camera).GetMethod("ResetCullingMatrix", new Type[] { });
+                    resetCullingMatrixMethod.Invoke(ourCamera, null);
 
-                if (lastMainCamera)
-                {
-                    lastMainCamera.transform.position = originalCameraPosition;
-                    lastMainCamera.transform.rotation = originalCameraRotation;
-                    lastMainCamera.fieldOfView = originalCameraFOV;
-                }
+                    ourCamera.ResetWorldToCameraMatrix();
+                    ourCamera.ResetProjectionMatrix();
+                    ourCamera = null;
+
+                    GameObject.Destroy(cameraMatrixOverrider.gameObject);
+                    cameraMatrixOverrider = null;
+                    break;
+                default:
+                    ExplorerCore.LogWarning($"Error: Camera type not implemented");
+                    break;
             }
 
             if (ourCamera)
@@ -277,7 +372,7 @@ namespace UnityExplorer.UI.Panels
             if (connector != null && connector.IsActive)
                 return;
 
-            lastSetCameraPosition = ourCamera.transform.position;
+            lastSetCameraPosition = GetFreecam().transform.position;
             positionInput.Text = ParseUtility.ToStringForInput<Vector3>(lastSetCameraPosition);
         }
 
@@ -287,6 +382,12 @@ namespace UnityExplorer.UI.Panels
             {
                 ourCamera.nearClipPlane = nearClipPlaneValue;
                 ourCamera.farClipPlane = farClipPlaneValue;
+            }
+
+            if (cameraMatrixOverrider)
+            {
+                cameraMatrixOverrider.nearClipPlane = nearClipPlaneValue;
+                cameraMatrixOverrider.farClipPlane = farClipPlaneValue;
             }
         }
 
@@ -301,11 +402,25 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "UseGameCameraToggle", out useGameCameraToggle, out Text useGameCameraText);
-            UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
-            useGameCameraToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
-            useGameCameraToggle.isOn = ConfigManager.Default_Gameplay_Freecam.Value;
-            useGameCameraText.text = "Use Game Camera?";
+            GameObject CameraModeRow = UIFactory.CreateHorizontalGroup(ContentRoot, "CameraModeRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            Text CameraMode = UIFactory.CreateLabel(CameraModeRow, "Camera Mode", "Camera Mode:");
+            UIFactory.SetLayoutElement(CameraMode.gameObject, minWidth: 100, minHeight: 25);
+
+            GameObject cameraTypeDropdownObj = UIFactory.CreateDropdown(CameraModeRow, "CameraType_Dropdown", out cameraTypeDropdown, null, 14, (idx) =>
+            {
+                if (inFreeCamMode)
+                {
+                    EndFreecam();
+                    BeginFreecam();
+                }
+            });
+            foreach (FreeCameraType type in Enum.GetValues(typeof(FreeCameraType)).Cast<FreeCameraType>())
+            {
+                cameraTypeDropdown.options.Add(new Dropdown.OptionData(Enum.GetName(typeof(FreeCameraType), type)));
+            }
+            UIFactory.SetLayoutElement(cameraTypeDropdownObj, minHeight: 25, minWidth: 150);
+            cameraTypeDropdown.value = (int)ConfigManager.Default_Freecam.Value;
 
             AddSpacer(5);
 
@@ -381,8 +496,8 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
-            UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
+            followLookAtObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowLookAtObject", "Not following/looking at any object.");
+            UIFactory.SetLayoutElement(followLookAtObjectLabel.gameObject, minWidth: 150, minHeight: 25);
 
             GameObject followObjectRow = UIFactory.CreateHorizontalGroup(ContentRoot, $"FollowObjectRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
 
@@ -390,12 +505,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followButton.OnClick += FollowButton_OnClick;
 
-            ButtonRef releaseFollowButton = UIFactory.CreateButton(followObjectRow, "ReleaseFollowButton", "Release Follow GameObject");
-            UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
-            releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
-
-            GameObject followRotationGameObject = UIFactory.CreateToggle(ContentRoot, "followRotationToggle", out followRotationToggle, out Text followRotationText);
-            UIFactory.SetLayoutElement(followRotationGameObject, minHeight: 25, flexibleWidth: 9999);
+            GameObject followRotationGameObject = UIFactory.CreateToggle(followObjectRow, "followRotationToggle", out followRotationToggle, out Text followRotationText);
+            UIFactory.SetLayoutElement(followRotationGameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followRotationToggle.isOn = false;
             followRotationText.text = "Follow Object Rotation";
             followRotationToggle.onValueChanged.AddListener((value) =>
@@ -415,6 +526,16 @@ namespace UnityExplorer.UI.Panels
                     CamPathsPanel.MaybeRedrawPath();
                 }
             });
+
+            GameObject lookAtObjectRow = UIFactory.CreateHorizontalGroup(ContentRoot, $"LookAtObjectRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            ButtonRef lookAtButton = UIFactory.CreateButton(lookAtObjectRow, "LookAtButton", "Look At GameObject");
+            UIFactory.SetLayoutElement(lookAtButton.GameObject, minWidth: 140, minHeight: 25, flexibleWidth: 9999);
+            lookAtButton.OnClick += LookAtButton_OnClick;
+
+            ButtonRef releaseFollowLookAtButton = UIFactory.CreateButton(lookAtObjectRow, "ReleaseFollowLookAtButton", "Release Follow/Look At");
+            UIFactory.SetLayoutElement(releaseFollowLookAtButton.GameObject, minWidth: 160, minHeight: 25, flexibleWidth: 9999);
+            releaseFollowLookAtButton.OnClick += ReleaseFollowLookAtButton_OnClick;
 
             AddSpacer(5);
 
@@ -487,6 +608,8 @@ namespace UnityExplorer.UI.Panels
 
         public static void FollowObjectAction(GameObject obj)
         {
+            ReleaseFollowLookAtButton_OnClick();
+
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
             if (followObject != null)
@@ -497,7 +620,7 @@ namespace UnityExplorer.UI.Panels
             followObject = obj;
             followObjectLastPosition = followObject.transform.position;
             followObjectLastRotation = followObject.transform.rotation;
-            followObjectLabel.text = $"Following: {obj.name}";
+            followLookAtObjectLabel.text = $"Following: {obj.name}";
 
             CamPathsPanel.UpdatedFollowObject(obj);
 
@@ -511,20 +634,32 @@ namespace UnityExplorer.UI.Panels
             MouseInspector.Instance.StartInspect(MouseInspectMode.World, FollowObjectAction);
         }
 
-        void ReleaseFollowButton_OnClick()
+        public static void LookAtObjectAction(GameObject obj)
         {
-            if (followObject)
+            ReleaseFollowLookAtButton_OnClick();
+            lookAtObject = obj;
+            followLookAtObjectLabel.text = $"Looking at: {obj.name}";
+        }
+
+        void LookAtButton_OnClick()
+        {
+            MouseInspector.Instance.StartInspect(MouseInspectMode.World, LookAtObjectAction);
+        }
+
+        static void ReleaseFollowLookAtButton_OnClick()
+        {
+            if (followObject != null)
             {
-                followObject = null;
-                followObjectLastPosition = Vector3.zero;
-                followObjectLastRotation = Quaternion.identity;
-                followObjectLabel.text = "Not following any object";
+                CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+                CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
+                CamPathsPanel.UpdatedFollowObject(null);
             }
-            CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
-            CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
-
-            CamPathsPanel.UpdatedFollowObject(null);
+            lookAtObject = null;
+            followObject = null;
+            followObjectLastPosition = Vector3.zero;
+            followObjectLastRotation = Quaternion.identity;
+            followLookAtObjectLabel.text = "Not following/looking at any object";
         }
 
         static void SetToggleButtonState()
@@ -630,73 +765,97 @@ namespace UnityExplorer.UI.Panels
             UpdateClippingPlanes();
         }
 
+        public static bool IsConnectorActive()
+        {
+            return FreeCamPanel.connector != null && FreeCamPanel.connector.IsActive;
+        }
+
         public static bool ShouldOverrideInput()
         {
             return inFreeCamMode && blockGamesInputOnFreecamToggle.isOn;
         }
 
+        public static Camera GetFreecam()
+        {
+            if (currentCameraType == FreeCameraType.ForcedMatrix) return cameraMatrixOverrider;
+            return ourCamera;
+        }
+
         // Getters and Setters for camera position and rotation
         public static Vector3 GetCameraPosition(bool isAbsolute = false)
         {
-            if (isAbsolute) return ourCamera.transform.position;
+            Camera freecam = GetFreecam();
+            if (isAbsolute) return freecam.transform.position;
             if (followObject)
             {
                 if (followRotationToggle.isOn)
                 {
-                    return Quaternion.Inverse(followObject.transform.rotation) * (ourCamera.transform.position - followObject.transform.position);
+                    return Quaternion.Inverse(followObject.transform.rotation) * (freecam.transform.position - followObject.transform.position);
                 }
                 else
                 {
-                    return ourCamera.transform.position - followObject.transform.position;
+                    return freecam.transform.position - followObject.transform.position;
                 }
             }
-            return ourCamera.transform.position;
+            return freecam.transform.position;
         }
 
         public static Quaternion GetCameraRotation(bool isAbsolute = false)
         {
-            if (isAbsolute) return ourCamera.transform.rotation;
-            if (followObject && followRotationToggle.isOn) return Quaternion.Inverse(followObjectLastRotation) * ourCamera.transform.rotation;
-            return ourCamera.transform.rotation;
+            Camera freecam = GetFreecam();
+            if (isAbsolute) return freecam.transform.rotation;
+            if (followObject && followRotationToggle.isOn) return Quaternion.Inverse(followObjectLastRotation) * freecam.transform.rotation;
+            return freecam.transform.rotation;
         }
 
         public static void SetCameraPosition(Vector3 newPosition, bool isAbsolute = false)
         {
+            Camera freecam = GetFreecam();
             if (isAbsolute)
             {
-                ourCamera.transform.position = newPosition;
+                freecam.transform.position = newPosition;
             }
             else if (followObject)
             {
                 if (followRotationToggle.isOn)
                 {
-                    ourCamera.transform.position = followObject.transform.rotation * newPosition + followObject.transform.position;
+                    freecam.transform.position = followObject.transform.rotation * newPosition + followObject.transform.position;
                 }
                 else
                 {
-                    ourCamera.transform.position = newPosition + followObject.transform.position;
+                    freecam.transform.position = newPosition + followObject.transform.position;
                 }
             }
             else
             {
-                ourCamera.transform.position = newPosition;
+                freecam.transform.position = newPosition;
             }
         }
 
         public static void SetCameraRotation(Quaternion newRotation, bool isAbsolute = false)
         {
+            Camera freecam = GetFreecam();
+            if (lookAtObject)
+            {
+                return;
+            }
             if (isAbsolute)
             {
-                ourCamera.transform.rotation = newRotation;
+                freecam.transform.rotation = newRotation;
             }
             else if (followObject && followRotationToggle.isOn)
             {
-                ourCamera.transform.rotation = followObjectLastRotation * newRotation;
+                freecam.transform.rotation = followObjectLastRotation * newRotation;
             }
             else
             {
-                ourCamera.transform.rotation = newRotation;
+                freecam.transform.rotation = newRotation;
             }
+        }
+
+        public static void SetFOV(float newFOV)
+        {
+            GetFreecam().fieldOfView = newFOV;
         }
     }
 
@@ -710,6 +869,9 @@ namespace UnityExplorer.UI.Panels
 
         public FreeCamBehaviour(IntPtr ptr) : base(ptr) { }
 #endif
+        private Action onBeforeRenderAction;
+        private Vector3 cachedPosition;
+        private Quaternion cachedRotation;
 
         internal void Update()
         {
@@ -720,38 +882,113 @@ namespace UnityExplorer.UI.Panels
                     FreeCamPanel.EndFreecam();
                     return;
                 }
-                Transform transform = FreeCamPanel.ourCamera.transform;
+                Transform movingTransform = FreeCamPanel.GetFreecam().transform;
 
-                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && FreeCamPanel.connector?.IsActive != true)
+                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && FreeCamPanel.connector?.IsActive != true && !IsInputFieldInFocus())
                 {
-                    ProcessInput();
+                    ProcessInput(movingTransform);
                 }
 
                 if (FreeCamPanel.followObject != null)
                 {
                     // position update
-                    transform.position += FreeCamPanel.followObject.transform.position - FreeCamPanel.followObjectLastPosition;
+                    movingTransform.position += FreeCamPanel.followObject.transform.position - FreeCamPanel.followObjectLastPosition;
 
                     if (FreeCamPanel.followRotationToggle.isOn)
                     {
                         // rotation update
                         Quaternion deltaRotation = FreeCamPanel.followObject.transform.rotation * Quaternion.Inverse(FreeCamPanel.followObjectLastRotation);
-                        Vector3 offset = transform.position - FreeCamPanel.followObject.transform.position;
-                        transform.position = transform.position - offset + deltaRotation * offset;
-                        transform.rotation = deltaRotation * transform.rotation;
+                        Vector3 offset = movingTransform.position - FreeCamPanel.followObject.transform.position;
+                        movingTransform.position = movingTransform.position - offset + deltaRotation * offset;
+                        movingTransform.rotation = deltaRotation * movingTransform.rotation;
                     }
 
                     FreeCamPanel.followObjectLastPosition = FreeCamPanel.followObject.transform.position;
                     FreeCamPanel.followObjectLastRotation = FreeCamPanel.followObject.transform.rotation;
                 }
 
-                FreeCamPanel.connector?.ExecuteCameraCommand(FreeCamPanel.ourCamera);
+                if (FreeCamPanel.lookAtObject != null && !FreeCamPanel.IsConnectorActive())
+                {
+                    movingTransform.LookAt(FreeCamPanel.lookAtObject.transform);
+                }
+
+                UpdateRelativeMatrix();
+                UpdateRealCamera();
+
+                FreeCamPanel.connector?.ExecuteCameraCommand(FreeCamPanel.GetFreecam());
 
                 FreeCamPanel.UpdatePositionInput();
             }
         }
 
-        internal void ProcessInput()
+        private bool IsInputFieldInFocus()
+        {
+            GameObject currentObject = EventSystemHelper.CurrentEventSystem.currentSelectedGameObject;
+            if (currentObject != null)
+            {
+                UnityEngine.UI.InputField selectedInputField = currentObject.GetComponent<UnityEngine.UI.InputField>();
+                if (selectedInputField != null)
+                {
+                    return selectedInputField.isFocused;
+                }
+            }
+            return false;
+        }
+
+        private void OnPreCull()
+        {
+            UpdateRelativeMatrix();
+            UpdateRealCamera();
+        }
+
+        private void OnPreRender()
+        {
+            UpdateRelativeMatrix();
+            UpdateRealCamera();
+        }
+
+        private void OnCameraPostRender()
+        {
+            UpdateRelativeMatrix();
+            //RestoreRealCameraTransform();
+        }
+
+        private void LateUpdate()
+        {
+            UpdateRelativeMatrix();
+            //RestoreRealCameraTransform();
+        }
+
+        internal void UpdateRelativeMatrix()
+        {
+            if (FreeCamPanel.cameraMatrixOverrider != null)
+            {
+                try
+                {
+                    MethodInfo getStereoViewMatrixMethod = typeof(Camera).GetMethod("GetStereoViewMatrix");
+                    Matrix4x4 stereoViewMatrixOverrider = getStereoViewMatrixMethod.Invoke(FreeCamPanel.cameraMatrixOverrider, new object[] { 0 }).TryCast<Matrix4x4>();
+                    MethodInfo setStereoViewMatrixMethod = typeof(Camera).GetMethod("SetStereoViewMatrix");
+                    setStereoViewMatrixMethod.Invoke(FreeCamPanel.ourCamera, new object[] { 0, stereoViewMatrixOverrider });
+                }
+                catch (Exception ex)
+                {
+                    ExplorerCore.LogWarning(ex);
+                }
+
+                FreeCamPanel.ourCamera.worldToCameraMatrix = FreeCamPanel.cameraMatrixOverrider.worldToCameraMatrix;
+
+                // Maybe I should use nonJitteredProjectionMatrix instead
+                FreeCamPanel.ourCamera.projectionMatrix = FreeCamPanel.cameraMatrixOverrider.projectionMatrix;
+
+                // Could be optimized so to not look up cullingMatrixProperty each frame
+                PropertyInfo cullingMatrixProperty = typeof(Camera).GetProperty("cullingMatrix");
+                Matrix4x4 cullingMatrixOverrider = cullingMatrixProperty.GetValue(FreeCamPanel.cameraMatrixOverrider, null).TryCast<Matrix4x4>();
+                MethodInfo setCullingMatrixMethod = cullingMatrixProperty.GetSetMethod();
+                setCullingMatrixMethod.Invoke(FreeCamPanel.ourCamera, new object[] { cullingMatrixOverrider });
+            }
+        }
+
+        internal void ProcessInput(Transform transform)
         {
             FreeCamPanel.currentUserCameraPosition = transform.position;
             FreeCamPanel.currentUserCameraRotation = transform.rotation;
@@ -832,20 +1069,176 @@ namespace UnityExplorer.UI.Panels
 
             if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
             {
-                FreeCamPanel.ourCamera.fieldOfView -= moveSpeed;
+                FreeCamPanel.GetFreecam().fieldOfView -= moveSpeed;
             }
 
             if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value))
             {
-                FreeCamPanel.ourCamera.fieldOfView += moveSpeed;
+                FreeCamPanel.GetFreecam().fieldOfView += moveSpeed;
             }
 
             if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value))
             {
-                FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
+                FreeCamPanel.GetFreecam().fieldOfView = FreeCamPanel.currentCameraType == FreeCamPanel.FreeCameraType.New ? 60 : FreeCamPanel.originalCameraFOV;
             }
 
             FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
+        }
+
+        // The following code forces the freecamcam to update before rendering a frame
+        protected virtual void Awake()
+        {
+            onBeforeRenderAction = () => { UpdateRelativeMatrix(); UpdateRealCamera(); };
+        }
+
+        protected virtual void OnEnable()
+        {
+#if CPP
+            try
+            {
+                Application.add_onBeforeRender(onBeforeRenderAction);
+            }
+            catch (Exception exception)
+            {
+                ExplorerCore.LogWarning($"Failed to listen to BeforeRender: {exception}");
+            }
+#endif
+            // These doesn't exist for Unity <2017 nor when using HDRP
+            Type renderPipelineManagerType = ReflectionUtility.GetTypeByName("RenderPipelineManager");
+            if (renderPipelineManagerType != null)
+            {
+                EventInfo beginFrameRenderingEvent = renderPipelineManagerType.GetEvent("beginFrameRendering");
+                if (beginFrameRenderingEvent != null)
+                {
+                    beginFrameRenderingEvent.AddEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endFrameRenderingEvent = renderPipelineManagerType.GetEvent("endFrameRendering");
+                if (endFrameRenderingEvent != null)
+                {
+                    endFrameRenderingEvent.AddEventHandler(null, OnAfterEvent);
+                }
+
+                EventInfo beginCameraRenderingEvent = renderPipelineManagerType.GetEvent("beginCameraRendering");
+                if (beginCameraRenderingEvent != null)
+                {
+                    beginCameraRenderingEvent.AddEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endCameraRenderingEvent = renderPipelineManagerType.GetEvent("endCameraRendering");
+                if (endCameraRenderingEvent != null)
+                {
+                    endCameraRenderingEvent.AddEventHandler(null, OnAfterEvent);
+                }
+
+                EventInfo beginContextRenderingEvent = renderPipelineManagerType.GetEvent("beginContextRendering");
+                if (beginContextRenderingEvent != null)
+                {
+                    beginContextRenderingEvent.AddEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endContextRenderingEvent = renderPipelineManagerType.GetEvent("endContextRendering");
+                if (endContextRenderingEvent != null)
+                {
+                    endContextRenderingEvent.AddEventHandler(null, OnAfterEvent);
+                }
+            }
+
+            EventInfo onBeforeRenderEvent = typeof(Application).GetEvent("onBeforeRender");
+            if (onBeforeRenderEvent != null)
+            {
+                onBeforeRenderEvent.AddEventHandler(null, onBeforeRenderAction);
+            }
+        }
+
+        protected virtual void OnDisable()
+        {
+#if CPP
+            try
+            {
+                Application.remove_onBeforeRender(onBeforeRenderAction);
+            }
+            catch (Exception exception)
+            {
+                ExplorerCore.LogWarning($"Failed to unlisten from BeforeRender: {exception}");
+            }
+#endif
+            // These doesn't exist for Unity <2017 nor when using HDRP
+            Type renderPipelineManagerType = ReflectionUtility.GetTypeByName("RenderPipelineManager");
+
+            if (renderPipelineManagerType != null)
+            {
+                EventInfo beginFrameRenderingEvent = renderPipelineManagerType.GetEvent("beginFrameRendering");
+                if (beginFrameRenderingEvent != null)
+                {
+                    beginFrameRenderingEvent.RemoveEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endFrameRenderingEvent = renderPipelineManagerType.GetEvent("endFrameRendering");
+                if (endFrameRenderingEvent != null)
+                {
+                    endFrameRenderingEvent.RemoveEventHandler(null, OnAfterEvent);
+                }
+
+                EventInfo beginCameraRenderingEvent = renderPipelineManagerType.GetEvent("beginCameraRendering");
+                if (beginCameraRenderingEvent != null)
+                {
+                    beginCameraRenderingEvent.RemoveEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endCameraRenderingEvent = renderPipelineManagerType.GetEvent("endCameraRendering");
+                if (endCameraRenderingEvent != null)
+                {
+                    endCameraRenderingEvent.RemoveEventHandler(null, OnAfterEvent);
+                }
+
+                EventInfo beginContextRenderingEvent = renderPipelineManagerType.GetEvent("beginContextRendering");
+                if (beginContextRenderingEvent != null)
+                {
+                    beginContextRenderingEvent.RemoveEventHandler(null, OnBeforeEvent);
+                }
+                EventInfo endContextRenderingEvent = renderPipelineManagerType.GetEvent("endContextRendering");
+                if (endContextRenderingEvent != null)
+                {
+                    endContextRenderingEvent.RemoveEventHandler(null, OnAfterEvent);
+                }
+            }
+
+            EventInfo onBeforeRenderEvent = typeof(Application).GetEvent("onBeforeRender");
+            if (onBeforeRenderEvent != null)
+            {
+                onBeforeRenderEvent.RemoveEventHandler(null, onBeforeRenderAction);
+            }
+        }
+
+        private void OnBeforeEvent(object arg1, Camera[] arg2)
+        {
+            UpdateRelativeMatrix();
+            UpdateRealCamera();
+        }
+
+        private void OnAfterEvent(object arg1, Camera[] arg2)
+        {
+            UpdateRelativeMatrix();
+            //RestoreRealCameraTransform();
+        }
+
+        // HDRP matrix override ignores us moving the camera unfortunately, so we try to copy over the position of the camera matrix overrider.
+        protected void UpdateRealCamera()
+        {
+            if (FreeCamPanel.cameraMatrixOverrider != null)
+            {
+                cachedPosition = FreeCamPanel.ourCamera.transform.position;
+                FreeCamPanel.ourCamera.transform.position = FreeCamPanel.cameraMatrixOverrider.transform.position;
+                // We also try to update the rotation in case there are game shaders that use the real camera rotation
+                cachedRotation = FreeCamPanel.ourCamera.transform.rotation;
+                FreeCamPanel.ourCamera.transform.rotation = FreeCamPanel.cameraMatrixOverrider.transform.rotation;
+            }
+        }
+
+        protected void RestoreRealCameraTransform()
+        {
+            if (FreeCamPanel.cameraMatrixOverrider != null)
+            {
+                FreeCamPanel.ourCamera.transform.position = cachedPosition;
+                FreeCamPanel.ourCamera.transform.rotation = cachedRotation;
+            }
+            UpdateRealCamera();
         }
     }
 

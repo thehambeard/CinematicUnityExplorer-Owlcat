@@ -48,7 +48,6 @@ namespace UnityExplorer.UI
 
             UIManager.UICanvas.targetDisplay = display;
 
-
             // ensure a camera is targeting the display
             if (!Camera.main || Camera.main.targetDisplay != display)
             {

@@ -161,7 +161,7 @@ namespace UnityExplorer.UI.Panels
 
                     SceneData.Add(sData);
                 }
-                catch(Exception ex) 
+                catch (Exception ex)
                 {
                     ExplorerCore.LogError($"Failed creating SceneData for Scene {scene}");
                     ExplorerCore.LogError(ex.Message + ex.StackTrace);
@@ -209,7 +209,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
 
             ConstructSpacer(horiGroup, 10 * tab);
-            
+
             GameObject toggleObj = UIFactory.CreateToggle(horiGroup, "BehaviourToggle", out Toggle enabledToggle, out Text behavText, default, 17, 17);
             UIFactory.SetLayoutElement(toggleObj, minHeight: 17, flexibleHeight: 0, minWidth: 17);
 

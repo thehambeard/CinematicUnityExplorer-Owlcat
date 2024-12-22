@@ -2,9 +2,7 @@
 	<Import Project="$(SolutionDir)Shared.props" />
 	<Import Project="$(SolutionDir)GamePath.props" Condition="Exists('$(SolutionDir)GamePath.props')" />
 
-	<PropertyGroup>
-		<AssemblyName>UniverseLib</AssemblyName>
-	</PropertyGroup>
+	
 
 	<!-- NuGet -->
 	<ItemGroup>

@@ -44,8 +44,12 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
             copyFovButton.OnClick += () =>
             {
-                point.fov = FreeCamPanel.ourCamera.fieldOfView;
-                GetCamPathsPanel().controlPoints[index] = point;
+                Camera freecam = FreeCamPanel.GetFreecam();
+                if (freecam != null)
+                {
+                    point.fov = freecam.fieldOfView;
+                    GetCamPathsPanel().controlPoints[index] = point;
+                }
             };
 
             ButtonRef moveToPointButton = UIFactory.CreateButton(UIRoot, "Move Cam to Node", "Move Cam to Node");
@@ -54,7 +58,7 @@ namespace UnityExplorer.UI.Panels
             {
                 FreeCamPanel.SetCameraRotation(point.rotation);
                 FreeCamPanel.SetCameraPosition(point.position);
-                FreeCamPanel.ourCamera.fieldOfView = point.fov;
+                FreeCamPanel.SetFOV(point.fov);
             };
 
             ButtonRef moveUpButton = UIFactory.CreateButton(UIRoot, "MoveUp", "▲");
