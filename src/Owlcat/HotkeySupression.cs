@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using Kingmaker.UI;
+using Kingmaker.UI.InputSystems;
 using UnityEngine.EventSystems;
 
 namespace CinematicUnityExplorer.Owlcat;

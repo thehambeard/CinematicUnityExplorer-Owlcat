@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using Kingmaker.UI.MVVM;
+using Kingmaker.Code.UI.MVVM;
 using UnityExplorer;
 
 namespace CinematicUnityExplorer.Owlcat;
@@ -9,7 +9,7 @@ internal static class CinematicUnityExplorerLoader
 {
     static bool _loaded;
 
-    [HarmonyPatch(typeof(RootUIContext), nameof(RootUIContext.InitializeUiScene))]
+    [HarmonyPatch(typeof(RootUIContext), nameof(RootUIContext.InitializeUiSceneCoroutine))]
     [HarmonyPostfix]
     static void InitializeUiScene_Postfix() => LoadUnityExplorer();
 
