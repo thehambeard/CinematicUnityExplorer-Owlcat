@@ -1,7 +1,6 @@
 ﻿using CinematicUnityExplorer;
 using HarmonyLib;
 using Kingmaker.UI.Selection;
-using Owlcat.Runtime.Core.Logging;
 using System.Reflection.Emit;
 
 [HarmonyPatch(typeof(KingmakerInputModule), nameof(KingmakerInputModule.CheckEventSystem), methodType: MethodType.Enumerator)]
@@ -12,10 +11,8 @@ static class AwaitEventSystemSuppression
         var array = instructions.ToArray();
         for (var i = 1; i < array.Length; i++)
         {
-            var test = AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string), typeof(object[])]);
-
             if (array[i - 1].opcode == OpCodes.Ldstr &&
-                array[i].Calls(AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string), typeof(object[])])))
+                array[i].Calls(AccessTools.Method(typeof(Debug), nameof(Debug.Log), [typeof(string)])))
             {
                 Main.Logger.Log($"Silencing \"{array[i - 1].operand}\"");
 

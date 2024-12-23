@@ -4,8 +4,9 @@ using Kingmaker.UI;
 using Kingmaker.UI.AbilityTarget;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
-using static Kingmaker.Blueprints.Root.CursorRoot;
+using UniverseLib.Runtime;
 
 namespace UniverseLib.UI.Panels
 {
@@ -31,13 +32,21 @@ namespace UniverseLib.UI.Panels
 
         // Resizing
         public bool WasResizing { get; internal set; }
-
-        private bool WasHoveringResize => CursorController.IsResizeCursor;
+        private bool WasHoveringResize;
 
         private ResizeTypes currentResizeType = ResizeTypes.NONE;
         private Vector2 lastResizePos;
         private ResizeTypes lastResizeHoverType;
         private Rect totalResizeRect;
+
+        private enum CursorType
+        {
+            DiagRight,
+            DiagLeft,
+            Horizontal,
+            Vertical
+        }
+        private Dictionary<CursorType, Texture2D> _cursors = [];
 
         public PanelDragger(PanelBase uiPanel)
         {
@@ -45,7 +54,23 @@ namespace UniverseLib.UI.Panels
             this.DragableArea = uiPanel.TitleBar.GetComponent<RectTransform>();
             this.Rect = uiPanel.Rect;
 
+            LoadCursors();
             UpdateResizeCache();
+        }
+
+        private void LoadCursors()
+        {
+            _cursors.Add(CursorType.DiagRight, LoadCursor(CursorResources.diagonally_01));
+            _cursors.Add(CursorType.DiagLeft, LoadCursor(CursorResources.diagonally_02));
+            _cursors.Add(CursorType.Horizontal, LoadCursor(CursorResources.horizontal));
+            _cursors.Add(CursorType.Vertical, LoadCursor(CursorResources.vertical));
+        }
+
+        private Texture2D LoadCursor(byte[] bytes)
+        {
+            var texture = TextureHelper.NewTexture2D(32, 32, TextureFormat.RGBA32, false);
+            texture.LoadImage(bytes);
+            return texture;
         }
 
         protected internal virtual void Update(MouseState state, Vector3 rawMousePos)
@@ -254,45 +279,45 @@ namespace UniverseLib.UI.Panels
 
             lastResizeHoverType = resizeType;
 
-            if (!CursorController.IsResizeCursor)
+            if (!WasHoveringResize)
             {
                 if (PCCursor.Instance == null)
                 {
-                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(GetCursor(resizeType));
-                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                    Texture2D cursorTexture = GetCursor(resizeType);
+                    Cursor.SetCursor(cursorTexture, new Vector2(10f, 10f), CursorMode.Auto);
                 }
                 else
                 {
-                    Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(32f, 32f));
+                    Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(10f, 10f));
                 }
-                CursorController.IsResizeCursor = true;
+                WasHoveringResize = true;
             }
         }
 
-        private CursorRoot.CursorType GetCursor(ResizeTypes resizeType) => resizeType switch
+        private Texture2D GetCursor(ResizeTypes resizeType) => resizeType switch
         {
-            ResizeTypes.Top or ResizeTypes.Bottom => CursorRoot.CursorType.ArrowVerticalCursor,
-            ResizeTypes.TopRight or ResizeTypes.BottomLeft => CursorRoot.CursorType.ArrowDiagonally01Cursor,
-            ResizeTypes.TopLeft or ResizeTypes.BottomRight => CursorRoot.CursorType.ArrowDiagonally02Cursor,
-            ResizeTypes.Left or ResizeTypes.Right => CursorRoot.CursorType.ArrowHorizontalCursor,
+            ResizeTypes.Top or ResizeTypes.Bottom => _cursors[CursorType.Vertical],
+            ResizeTypes.TopRight or ResizeTypes.BottomLeft => _cursors[CursorType.DiagRight],
+            ResizeTypes.TopLeft or ResizeTypes.BottomRight => _cursors[CursorType.DiagLeft],
+            ResizeTypes.Left or ResizeTypes.Right => _cursors[CursorType.Horizontal],
             _ => throw new ArgumentOutOfRangeException(),
         };
 
         public virtual void OnHoverResizeEnd()
         {
-            if (CursorController.IsResizeCursor)
+            if (WasHoveringResize)
             {
-                CursorController.IsResizeCursor = false;
+                WasHoveringResize = false;
                 Game.Instance.CursorController.ClearCursor();
 
                 if (PCCursor.Instance == null)
                 {
-                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(CursorType.DefaultCursor);
+                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.DefaultCursor;
                     Cursor.SetCursor(cursorTexture, Vector2.zero, CursorMode.Auto);
                 }
                 else
                 {
-                    Game.Instance.CursorController.SetCustomCursor(CursorRoot.CursorType.None, Vector2.zero);
+                    Game.Instance.CursorController.SetCustomCursor(BlueprintRoot.Instance.Cursors.DefaultCursor, Vector2.zero);
                 }
             }
         }

@@ -300,7 +300,7 @@ namespace UnityExplorer
             }
 
             mesh.triangles = FinalTri;
-            mesh.Optimize();
+            //mesh.Optimize();
             mesh.RecalculateNormals();
             //mf.mesh = mesh;
 

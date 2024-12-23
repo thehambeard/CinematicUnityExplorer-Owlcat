@@ -1,33 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="$(SolutionDir)Shared.props" />
-	<Import Project="$(SolutionDir)GamePath.props" Condition="Exists('$(SolutionDir)GamePath.props')" />
+  <Import Project="$(SolutionDir)Shared.props" />
+  <Import Project="$(SolutionDir)GamePath.props" Condition="Exists('$(SolutionDir)GamePath.props')" />
 
-	
+  <PropertyGroup>
+    <AssemblyName>UniverseLib</AssemblyName>
+  </PropertyGroup>
 
-	<!-- NuGet -->
-	<ItemGroup>
-		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" IncludeAssets="build; native; contentfiles; analyzers" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.16.1" IncludeAssets="build; native; contentfiles; analyzers" PrivateAssets="all" />
-		<PackageReference Include="MicroUtils.HarmonyAnalyzers" IncludeAssets="build; native; contentfiles; analyzers" Version="*-*" PrivateAssets="all" />
-		<PackageReference Include="UniverseLib.Analyzers" Version="1.0.4" IncludeAssets="compile" />
-	</ItemGroup>
-	
-	<!-- Assembly References -->
-	<ItemGroup>
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Unity*.dll" Private="false" Publicize="True" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Assembly-CSharp.dll*" Publicize="true" Private="false" />
-	</ItemGroup>
+  <!-- NuGet -->
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" IncludeAssets="build; native; contentfiles; analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.16.1" IncludeAssets="build; native; contentfiles; analyzers" PrivateAssets="all" />
+    <PackageReference Include="MicroUtils.HarmonyAnalyzers" IncludeAssets="build; native; contentfiles; analyzers" Version="*-*" PrivateAssets="all" />
+    <PackageReference Include="UniverseLib.Analyzers" Version="1.0.4" IncludeAssets="compile" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<EmbeddedResource Include="Resources\*" />
-	</ItemGroup>
-	
-	<Target Name="Deploy" AfterTargets="Build">
-		<ItemGroup>
-			<Files Include="$(TargetDir)\**\*.*" />
-		</ItemGroup>
+  <!-- Assembly References -->
+  <ItemGroup>
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Unity*.dll" Private="false" Publicize="true" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Assembly-CSharp.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
+  </ItemGroup>
 
-		<Copy SourceFiles="@(Files)" DestinationFiles="@(Files->'$(SolutionDir)lib\%(RecursiveDir)%(Filename)%(Extension)')" />
-	</Target>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CursorResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CursorResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CursorResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CursorResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="Deploy" AfterTargets="Build">
+    <ItemGroup>
+      <Files Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(Files)" DestinationFiles="@(Files->'$(SolutionDir)lib\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 </Project>

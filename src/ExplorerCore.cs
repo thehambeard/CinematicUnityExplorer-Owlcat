@@ -55,7 +55,9 @@ namespace UnityExplorer
 
             UERuntimeHelper.Init();
             ExplorerBehaviour.Setup();
-            UnityCrashPrevention.Init();
+
+            //Not needed by Kingmaker
+            //UnityCrashPrevention.Init();
 
             //Extra inits
             ArrowGenerator.PatchLights();

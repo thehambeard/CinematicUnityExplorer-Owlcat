@@ -1,5 +1,6 @@
 ﻿using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.PostProcessing;
 using UnityExplorer.ObjectExplorer;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
@@ -22,19 +23,19 @@ namespace UnityExplorer.UI.Panels
 
     internal class VolumeComponentData
     {
-        public readonly VolumeComponent VolumeComponent;
+        public readonly PostProcessingComponentBase VolumeComponent;
         public readonly VolumeData Owner;
         public readonly bool IsActiveDefault;
         public readonly RowComponentGroup RowComponentGroup;
 
-        public VolumeComponentData(VolumeComponent volumeComponent, VolumeData owner, RowComponentGroup rowComponentGroup)
+        public VolumeComponentData(PostProcessingComponentBase volumeComponent, VolumeData owner, RowComponentGroup rowComponentGroup)
         {
             VolumeComponent = volumeComponent;
             Owner = owner;
             RowComponentGroup = rowComponentGroup;
 
-            IsActiveDefault = volumeComponent.active;
-            rowComponentGroup.Toggle.isOn = volumeComponent.active;
+            IsActiveDefault = volumeComponent.GetModel().enabled;
+            rowComponentGroup.Toggle.isOn = volumeComponent.GetModel().enabled;
             rowComponentGroup.InspectButton.OnClick += OnInspectButtonClick;
             rowComponentGroup.Toggle.onValueChanged.AddListener(OnToggleChanged);
 
@@ -43,7 +44,7 @@ namespace UnityExplorer.UI.Panels
 
         public void RevertToDefault() => RowComponentGroup.Toggle.isOn = IsActiveDefault;
         public void SetComponentState(bool isOn) => RowComponentGroup.Toggle.isOn = isOn;
-        private void OnToggleChanged(bool isOn) => VolumeComponent.active = isOn;
+        private void OnToggleChanged(bool isOn) => VolumeComponent.GetModel().enabled = isOn;
         private void OnInspectButtonClick() => InspectorManager.InspectWithFilters(VolumeComponent, string.Empty);
     }
 
@@ -51,13 +52,13 @@ namespace UnityExplorer.UI.Panels
     {
         public List<VolumeComponentData> Components = [];
 
-        public readonly Volume Volume;
+        public readonly PostProcessingBehaviour Volume;
         public readonly SceneData Owner;
         public readonly RowComponentGroup RowComponentGroup;
 
-        public bool IsAnyActive => Components.Any(x => x.VolumeComponent.active);
+        public bool IsAnyActive => Components.Any(x => x.VolumeComponent.GetModel().enabled);
 
-        public VolumeData(Volume volume, SceneData owner, RowComponentGroup rowComponentGroup)
+        public VolumeData(PostProcessingBehaviour volume, SceneData owner, RowComponentGroup rowComponentGroup)
         {
             Owner = owner;
             Volume = volume;
@@ -71,7 +72,7 @@ namespace UnityExplorer.UI.Panels
         public void RevertAllComponents()
         {
             Components.ForEach(x => x.RevertToDefault());
-            RowComponentGroup.Toggle.SetIsOnWithoutNotify(IsAnyActive);
+            RowComponentGroup.Toggle.m_IsOn = IsAnyActive;
         }
 
         public void SetAllComponents(bool isOn) => RowComponentGroup.Toggle.isOn = isOn;
@@ -100,7 +101,7 @@ namespace UnityExplorer.UI.Panels
         public void RevertAllVolumes()
         {
             Volumes.ForEach(x => x.RevertAllComponents());
-            RowComponentGroup.Toggle.SetIsOnWithoutNotify(IsAnyActive);
+            RowComponentGroup.Toggle.m_IsOn = IsAnyActive;
         }
 
         private void OnToggleChanged(bool isOn) => Volumes.ForEach(x => x.SetAllComponents(isOn));
@@ -136,27 +137,27 @@ namespace UnityExplorer.UI.Panels
             {
                 try
                 {
-                    var volumes = scene.GetRootGameObjects()
-                       .SelectMany(rootObject => rootObject.GetComponentsInChildren<Volume>(includeInactive: false))
+                    var ppBehaviours = scene.GetRootGameObjects()
+                       .SelectMany(rootObject => rootObject.GetComponentsInChildren<PostProcessingBehaviour>(includeInactive: false))
                        .ToList();
 
-                    if (volumes.Count == 0)
+                    if (ppBehaviours.Count == 0)
                         continue;
 
                     SceneData sData = new(scene, ConstructRow(scene.name));
 
-                    for (int i = 0; i < volumes.Count; i++)
+                    for (int i = 0; i < ppBehaviours.Count; i++)
                     {
-                        if (volumes[i].profile.components.Count == 0)
+                        if (ppBehaviours[i].m_Components.Count == 0)
                             continue;
 
                         sData.Volumes.Add(new(
-                            volumes[i],
+                            ppBehaviours[i],
                             sData,
-                            ConstructRow(UnityHelpers.GetTransformPath(volumes[i].transform, true), 1)));
+                            ConstructRow(UnityHelpers.GetTransformPath(ppBehaviours[i].transform, true), 1)));
 
-                        foreach (var comp in volumes[i].profile.components)
-                            sData.Volumes[i].Components.Add(new(comp, sData.Volumes[i], ConstructRow(comp.name, 2)));
+                        foreach (var comp in ppBehaviours[i].m_Components)
+                            sData.Volumes[i].Components.Add(new(comp, sData.Volumes[i], ConstructRow(comp.GetType().Name, 2)));
                     }
 
                     SceneData.Add(sData);
@@ -168,7 +169,6 @@ namespace UnityExplorer.UI.Panels
                 }
             }
         }
-
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
