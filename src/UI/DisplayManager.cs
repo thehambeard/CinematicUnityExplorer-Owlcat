@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityExplorer.Config;
 using UniverseLib.Input;
+using UniverseLib.UI.Panels;
 
 namespace UnityExplorer.UI
 {
@@ -58,6 +59,7 @@ namespace UnityExplorer.UI
                     canvasCamera.hideFlags = HideFlags.HideAndDontSave;
                 }
                 canvasCamera.targetDisplay = display;
+                PanelManager.SetResizeCursorTargetDisplay(display);
             }
 
             RuntimeHelper.StartCoroutine(FixPanels());

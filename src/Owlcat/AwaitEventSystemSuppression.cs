@@ -35,8 +35,13 @@ static class AwaitEventSystemSuppression
                 array[i - 1].opcode = OpCodes.Nop;
                 array[i - 1].operand = null;
 
+#if !KM
                 array[i].opcode = OpCodes.Pop;
                 array[i].operand = null;
+#else
+                array[i].opcode = OpCodes.Nop;
+                array[i].operand = null;
+#endif
             }
         }
 
