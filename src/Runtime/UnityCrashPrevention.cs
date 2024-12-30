@@ -6,12 +6,15 @@
 
         internal static void Init()
         {
-            TryPatch<Canvas>("get_renderingDisplaySize", nameof(Canvas_renderingDisplaySize_Prefix));
+#if !KM
+
+            TryPatch<Canvas>(nameof(Canvas.renderingDisplaySize), nameof(Canvas_renderingDisplaySize_Prefix));
 
             IEnumerable<MethodBase> patched = harmony.GetPatchedMethods();
             if (patched.Any())
                 ExplorerCore.Log(
                     $"Initialized UnityCrashPrevention for: {string.Join(", ", patched.Select(it => $"{it.DeclaringType.Name}.{it.Name}").ToArray())}");
+#endif
         }
 
         internal static void TryPatch<T>(string orig, string prefix, Type[] argTypes = null)
@@ -19,7 +22,7 @@
             try
             {
                 harmony.Patch(
-                    HarmonyLib.AccessTools.Method(typeof(T), orig, argTypes),
+                    HarmonyLib.AccessTools.PropertyGetter(typeof(T), orig),
                     new HarmonyLib.HarmonyMethod(HarmonyLib.AccessTools.Method(typeof(UnityCrashPrevention), prefix)));
             }
             catch //(Exception ex)

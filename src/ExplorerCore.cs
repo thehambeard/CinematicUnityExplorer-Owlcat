@@ -7,6 +7,7 @@ global using UnityEngine;
 global using UnityEngine.UI;
 global using UniverseLib;
 global using UniverseLib.Utility;
+using CinematicUnityExplorer;
 using UnityExplorer.CatmullRom;
 using UnityExplorer.Config;
 using UnityExplorer.ObjectExplorer;
@@ -19,10 +20,10 @@ namespace UnityExplorer
 {
     public static class ExplorerCore
     {
-        public const string NAME = "CinematicUnityExplorer";
-        public const string VERSION = "1.3.0";
-        public const string AUTHOR = "originalnicodr, Sinai, yukieiji";
-        public const string GUID = "com.originalnicodr.cinematicunityexplorer";
+        public static string NAME => Main.ModEntry.Info.DisplayName;
+        public static string VERSION => Main.ModEntry.Info.Version;
+        public static string AUTHOR => Main.ModEntry.Info.Author;
+        public static string GUID => Main.ModEntry.Info.Id;
 
         public static IExplorerLoader Loader { get; private set; }
         public static string ExplorerFolder => Path.Combine(Loader.ExplorerFolderDestination, Loader.ExplorerFolderName);

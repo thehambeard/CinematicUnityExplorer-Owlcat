@@ -5,28 +5,49 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CinematicUnityExplorer", "src\CinematicUnityExplorer.csproj", "{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniverseLib", "..\UniverseLib\src\UniverseLib.csproj", "{796A6252-3B43-4CF1-8A36-DB2E663AE13B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{868C0EDF-8A0E-4070-AC7D-0EB5A616FF05}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		GamePaths.props = GamePaths.props
+		Shared.props = Shared.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		KM_Debug|Any CPU = KM_Debug|Any CPU
-		KM_Release|Any CPU = KM_Release|Any CPU
+		KM|Any CPU = KM|Any CPU
 		RT_Debug|Any CPU = RT_Debug|Any CPU
-		RT_Release|Any CPU = RT_Release|Any CPU
+		RT|Any CPU = RT|Any CPU
 		WOTR_Debug|Any CPU = WOTR_Debug|Any CPU
-		WOTR_Release|Any CPU = WOTR_Release|Any CPU
+		WOTR|Any CPU = WOTR|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM_Debug|Any CPU.ActiveCfg = KM_Debug|Any CPU
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM_Debug|Any CPU.Build.0 = KM_Debug|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM_Release|Any CPU.ActiveCfg = KM_Release|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM_Release|Any CPU.Build.0 = KM_Release|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM|Any CPU.ActiveCfg = KM|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.KM|Any CPU.Build.0 = KM|Any CPU
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT_Debug|Any CPU.ActiveCfg = RT_Debug|Any CPU
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT_Debug|Any CPU.Build.0 = RT_Debug|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT_Release|Any CPU.ActiveCfg = RT_Release|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT_Release|Any CPU.Build.0 = RT_Release|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT|Any CPU.ActiveCfg = RT|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.RT|Any CPU.Build.0 = RT|Any CPU
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR_Debug|Any CPU.ActiveCfg = WOTR_Debug|Any CPU
 		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR_Debug|Any CPU.Build.0 = WOTR_Debug|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR_Release|Any CPU.ActiveCfg = WOTR_Release|Any CPU
-		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR_Release|Any CPU.Build.0 = WOTR_Release|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR|Any CPU.ActiveCfg = WOTR|Any CPU
+		{B21DBDE3-5D6F-4726-93AB-CC3CC68BAE7D}.WOTR|Any CPU.Build.0 = WOTR|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.KM_Debug|Any CPU.ActiveCfg = KM_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.KM_Debug|Any CPU.Build.0 = KM_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.KM|Any CPU.ActiveCfg = KM|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.KM|Any CPU.Build.0 = KM|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.RT_Debug|Any CPU.ActiveCfg = RT_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.RT_Debug|Any CPU.Build.0 = RT_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.RT|Any CPU.ActiveCfg = RT|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.RT|Any CPU.Build.0 = RT|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.WOTR_Debug|Any CPU.ActiveCfg = WOTR_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.WOTR_Debug|Any CPU.Build.0 = WOTR_Debug|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.WOTR|Any CPU.ActiveCfg = WOTR|Any CPU
+		{796A6252-3B43-4CF1-8A36-DB2E663AE13B}.WOTR|Any CPU.Build.0 = WOTR|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

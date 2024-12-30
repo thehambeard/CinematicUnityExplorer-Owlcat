@@ -291,7 +291,9 @@ namespace UnityExplorer
             }
     
             mesh.triangles = FinalTri;
+#if !KM
             mesh.Optimize();
+#endif
             mesh.RecalculateNormals();
             //mf.mesh = mesh;
 

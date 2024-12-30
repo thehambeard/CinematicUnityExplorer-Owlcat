@@ -14,6 +14,10 @@
 		<Content Include="$(SolutionDir)lib\Mono*" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\UniverseLib\src\UniverseLib.csproj" />
+  </ItemGroup>
+
   <Target Name="Deploy" AfterTargets="Build">
     <ItemGroup>
       <Files Include="$(TargetDir)\**\*.*" />

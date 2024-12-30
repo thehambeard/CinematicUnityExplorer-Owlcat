@@ -40,9 +40,11 @@ namespace UnityExplorer.UI
 
                 return;
             }
+            if (ActiveDisplayIndex != 0) SecondaryDisplayHelper.DeactivateAdditionalDisplay();
 
             ActiveDisplayIndex = display;
-            ActiveDisplay.Activate();
+
+            SecondaryDisplayHelper.ActivateAdditionalDisplay();
 
             UIManager.UICanvas.targetDisplay = display;
 

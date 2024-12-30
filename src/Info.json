@@ -1,0 +1,12 @@
+{
+  "Id": "CinematicUnityExplorer",
+  "DisplayName": "Cinematic Unity Explorer Loader",
+  "Author": "Hambeard",
+  "Version": "1.2.0",
+  "ManagerVersion": "0.25.0",
+  "Requirements": [],
+  "AssemblyName": "CinematicUnityExplorer.dll",
+  "EntryMethod": "CinematicUnityExplorer.Main.Load",
+  "HomePage": "",
+  "Repository": ""
+}
