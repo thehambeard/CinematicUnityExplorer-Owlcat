@@ -21,9 +21,9 @@ namespace UniverseLib.Input
         private static InputType currentInputType;
 
         public static void Setup(){
-            currentInputType = InputManager.CurrentType;
+            currentInputType = InputType.InputSystem;
 
-            switch(currentInputType){
+            switch (currentInputType){
                 case InputType.Legacy:
                     ILegacyInput.Init();
                     break;
