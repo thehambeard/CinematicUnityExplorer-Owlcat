@@ -1,0 +1,87 @@
+<Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' InitialTargets="GenerateCustomPropsFile">
+	<PropertyGroup>
+		<Version>1.2.0</Version>
+		<TargetFramework>net481</TargetFramework>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<AnalysisLevel>preview</AnalysisLevel>
+		<OutputType>Library</OutputType>
+		<LangVersion>latest</LangVersion>
+    <WrathData>$(LocalAppData)Low\Owlcat Games\Pathfinder Wrath Of The Righteous</WrathData>
+    <RogueTraderData>$(LocalAppData)Low\Owlcat Games\Warhammer 40000 Rogue Trader</RogueTraderData>
+    <KingmakerData>$(LocalAppData)Low\Owlcat Games\Pathfinder Kingmaker</KingmakerData>
+    <Configurations>RT_Debug;RT_Release;WOTR_Debug;WOTR_Release;KM_Debug;KM_Release</Configurations>
+	</PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RT_Debug|AnyCPU'">
+    <OutputPath>bin\RT_Debug\</OutputPath>
+    <DefineConstants>RT;DEBUG;TRACE;RT;DEBUG;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RT_Release|AnyCPU'">
+    <OutputPath>bin\RT_Release\</OutputPath>
+    <DefineConstants>RT;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WOTR_Debug|AnyCPU'">
+    <OutputPath>bin\WOTR_Debug\</OutputPath>
+    <DefineConstants>WOTR;DEBUG;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WOTR_Release|AnyCPU'">
+    <OutputPath>bin\WOTR_Release\</OutputPath>
+    <DefineConstants>WOTR;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='KM_Debug|AnyCPU'">
+    <OutputPath>bin\KM_Debug\</OutputPath>
+    <DefineConstants>KM;DEBUG;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='KM_Release|AnyCPU'">
+    <OutputPath>bin\KM_Release\</OutputPath>
+    <DefineConstants>KM;TRACE;MONO;STANDALONE</DefineConstants>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'=='WOTR_Release' or '$(Configuration)'=='WOTR_Debug'">
+    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Unity*.dll" Publicize="true" Private="false" />
+    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Assembly-CSharp.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityModManager\UnityModManager.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Newtonsoft.Json.dll*" Private="false" />
+    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='RT_Release' or '$(Configuration)'=='RT_Debug'">
+    <Reference Include="$(RogueTraderInstallDir)\WH40KRT_Data\Managed\Unity*.dll" Publicize="true" Private="false" />
+    <Reference Include="$(RogueTraderInstallDir)\WH40KRT_Data\Managed\Code.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(RogueTraderData)\UnityModManager\UnityModManager.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(RogueTraderInstallDir)\WH40KRT_Data\Managed\0Harmony.dll*" Private="false" />
+    <Reference Include="$(RogueTraderInstallDir)\WH40KRT_Data\Managed\Newtonsoft.Json.dll*" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='KM_Release' or '$(Configuration)'=='KM_Debug'">
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Unity*.dll" Publicize="true" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Assembly-CSharp*.dll" Publicize="true" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityModManager\UnityModManager.dll*" Publicize="true" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Newtonsoft.Json.dll*" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" IncludeAssets="build; contentfiles" Version="0.4.2" PrivateAssets="all" />
+    <PackageReference Include="MicroUtils.HarmonyAnalyzers" IncludeAssets="runtime; build; native; contentfiles; analyzers" Version="*-*" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
