@@ -22,9 +22,9 @@
     <ItemGroup>
       <Files Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy Condition="'$(DefineConstants)' == 'WOTR' And '$(WrathInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(WrathInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy Condition="'$(DefineConstants)' == 'RT' And '$(RogueTraderInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(RogueTraderData)\UnityModManager\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy Condition="'$(DefineConstants)' == 'KM' And '$(KingmakerInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(KingmakerInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="('$(Configuration)' == 'WOTR' Or '$(Configuration)' == 'WOTR_Debug') And '$(WrathInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(WrathInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="('$(Configuration)' == 'RT' Or '$(Configuration)' == 'RT_Debug') And '$(RogueTraderInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(RogueTraderData)\UnityModManager\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="('$(Configuration)' == 'KM'  Or '$(Configuration)' == 'KM_Debug') And '$(KingmakerInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(KingmakerInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
     <ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\$(OutputPath)" DestinationFile="$(MSBuildProjectDirectory)\$(OutputPath)\..\$(AssemblyName)-$(Version)-$(Configuration).zip" Overwrite="true" />
   </Target>
 
