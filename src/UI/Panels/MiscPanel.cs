@@ -1,4 +1,5 @@
 ﻿using UnityExplorer.CacheObject;
+using UnityExplorer.Config;
 using UnityExplorer.Inspectors;
 using UnityExplorer.ObjectExplorer;
 using UniverseLib.UI;
@@ -95,7 +96,7 @@ namespace UnityExplorer.UI.Panels
         private void TakeScreenshot(){
             string filename = DateTime.Now.ToString("yyyy-M-d HH-mm-ss");
 
-            string screenshotsPath = Path.Combine(ExplorerCore.ExplorerFolder, "Screenshots");
+            string screenshotsPath = ConfigManager.Default_Output_Path.Value;
             System.IO.Directory.CreateDirectory(screenshotsPath);
             
             object[] args = {$"{screenshotsPath}\\{filename}.png", superSizeValue};

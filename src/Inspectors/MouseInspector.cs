@@ -189,7 +189,10 @@ namespace UnityExplorer.Inspectors
         {
             // hide title bar
             this.TitleBar.SetActive(false);
-            this.UIRoot.transform.SetParent(UIManager.UIRoot.transform, false);
+            //this.UIRoot.transform.SetParent(UIManager.UIRoot.transform, false);
+            GameObject parent = inspectorUIBase.RootObject;
+            parent.transform.SetParent(UniversalUI.CanvasRoot.transform);
+            inspectorUIBase.Canvas.targetDisplay = 0;
 
             GameObject inspectContent = UIFactory.CreateVerticalGroup(this.ContentRoot, "InspectContent", true, true, true, true, 3, new Vector4(2, 2, 2, 2));
             UIFactory.SetLayoutElement(inspectContent, flexibleWidth: 9999, flexibleHeight: 9999);

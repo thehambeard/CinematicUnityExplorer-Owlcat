@@ -205,7 +205,7 @@ namespace UnityExplorer.Config
 
             Screenshot = new("Take a screenshot",
                 "Takes a screenshot with the size multiplier specified in the Misc panel.\n" +
-                "Saves the screenshot to 'CinematicUnityExplorer\\Screenshots' in png format.",
+                "Saves the screenshot to the Default Output Path in png format.",
                 KeyCode.None);
 
             HUD_Toggle = new("HUD Toggle",
