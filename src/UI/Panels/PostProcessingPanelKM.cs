@@ -138,7 +138,7 @@ namespace UnityExplorer.UI.Panels
             {
                 try
                 {
-                    var ppBehaviours = scene.GetRootGameObjects()
+                    var ppBehaviours = RuntimeHelper.GetRootGameObjects(scene)
                        .SelectMany(rootObject => rootObject.GetComponentsInChildren<PostProcessingBehaviour>(includeInactive: false))
                        .ToList();
 

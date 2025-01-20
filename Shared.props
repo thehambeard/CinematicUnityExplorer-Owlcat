@@ -1,6 +1,6 @@
 <Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
 	<PropertyGroup>
-		<Version>1.2.1</Version>
+		<Version>1.2.2</Version>
 		<TargetFramework>net481</TargetFramework>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>

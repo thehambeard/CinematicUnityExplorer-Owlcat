@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using UnityExplorer.Config;
 using UnityExplorer.Inspectors;
 using UnityExplorer.UI.Panels;
@@ -12,10 +13,20 @@ namespace UnityExplorer.UI.Widgets
     public class Texture2DWidget : UnityObjectWidget
     {
         Texture2D texture;
+        Color[] originalColors;
         bool shouldDestroyTexture;
 
         bool textureViewerWanted;
         ButtonRef toggleButton;
+
+        bool toggleRedChannel = true;
+        bool toggleGreenChannel = true;
+        bool toggleBlueChannel = true;
+        bool toggleAlphaChannel = true;
+        ButtonRef toggleRedButton;
+        ButtonRef toggleBlueButton;
+        ButtonRef toggleGreenButton;
+        ButtonRef toggleAlphaButton;
 
         GameObject textureViewerRoot;
         InputFieldRef savePathInput;
@@ -57,6 +68,10 @@ namespace UnityExplorer.UI.Widgets
             if (textureViewerRoot)
                 textureViewerRoot.transform.SetParent(inspector.UIRoot.transform);
 
+            texture = TextureHelper.CreateReadableTexture(texture);
+            originalColors = texture.GetPixels();
+            SetChannelsActiveTexture();
+
             InspectorPanel.Instance.Dragger.OnFinishResize += OnInspectorFinishResize;
         }
 
@@ -69,6 +84,7 @@ namespace UnityExplorer.UI.Widgets
 
             texture = null;
             shouldDestroyTexture = false;
+            originalColors = null;
 
             if (image.sprite)
                 UnityEngine.Object.Destroy(image.sprite);
@@ -80,6 +96,57 @@ namespace UnityExplorer.UI.Widgets
                 textureViewerRoot.transform.SetParent(Pool<Texture2DWidget>.Instance.InactiveHolder.transform);
 
             base.OnReturnToPool();
+        }
+
+        void SetChannelsActiveTexture()
+        {
+            var modColors = new Color[originalColors.Length];
+
+            for (int i = 0; i < originalColors.Length; i++)
+            {
+                modColors[i].r = toggleRedChannel ? originalColors[i].r : 0f;
+                modColors[i].g = toggleGreenChannel ? originalColors[i].g : 0f;
+                modColors[i].b = toggleBlueChannel ? originalColors[i].b : 0f;
+                modColors[i].a = toggleAlphaChannel ? originalColors[i].a : 1f;
+            }
+            texture.SetPixels(modColors);
+            texture.Apply();
+        }
+
+        void SetButtonColorFromState(bool toggle, ButtonRef button)
+        {
+            if (button != null && toggle)
+                RuntimeHelper.SetColorBlockAuto(button.Component, new(0.2f, 0.4f, 0.2f));
+            else
+                RuntimeHelper.SetColorBlockAuto(button.Component, new(0.4f, 0.2f, 0.2f));
+        }
+
+        void ToggleRedChannel()
+        {
+            toggleRedChannel = !toggleRedChannel;
+            SetButtonColorFromState(toggleRedChannel, toggleRedButton);
+            SetChannelsActiveTexture();
+        }
+
+        void ToggleBlueChannel()
+        {
+            toggleBlueChannel = !toggleBlueChannel;
+            SetButtonColorFromState(toggleBlueChannel, toggleBlueButton);
+            SetChannelsActiveTexture();
+        }
+
+        void ToggleGreenChannel()
+        {
+            toggleGreenChannel = !toggleGreenChannel;
+            SetButtonColorFromState(toggleGreenChannel, toggleGreenButton);
+            SetChannelsActiveTexture();
+        }
+
+        void ToggleAlphaChannel()
+        {
+            toggleAlphaChannel = !toggleAlphaChannel;
+            SetButtonColorFromState(toggleAlphaChannel, toggleAlphaButton);
+            SetChannelsActiveTexture();
         }
 
         void ToggleTextureViewer()
@@ -214,6 +281,29 @@ namespace UnityExplorer.UI.Widgets
             textureViewerRoot = UIFactory.CreateVerticalGroup(uiRoot, "TextureViewer", false, false, true, true, 2, new Vector4(5, 5, 5, 5),
                 new Color(0.1f, 0.1f, 0.1f), childAlignment: TextAnchor.UpperLeft);
             UIFactory.SetLayoutElement(textureViewerRoot, flexibleWidth: 9999, flexibleHeight: 9999);
+
+            GameObject channelRowObj = UIFactory.CreateHorizontalGroup(textureViewerRoot, "ChannelRow", false, false, true, true, 2, new Vector4(2, 2, 2, 2),
+                new Color(0.1f, 0.1f, 0.1f));
+
+            toggleRedButton = UIFactory.CreateButton(channelRowObj, "RedButton", "Red Channel");
+            UIFactory.SetLayoutElement(toggleRedButton.Component.gameObject, minHeight: 25, minWidth: 100, flexibleWidth: 0);
+            toggleRedButton.OnClick += ToggleRedChannel;
+            SetButtonColorFromState(toggleRedChannel, toggleRedButton);
+
+            toggleBlueButton = UIFactory.CreateButton(channelRowObj, "BlueButton", "Blue Channel");
+            UIFactory.SetLayoutElement(toggleBlueButton.Component.gameObject, minHeight: 25, minWidth: 100, flexibleWidth: 0);
+            toggleBlueButton.OnClick += ToggleBlueChannel;
+            SetButtonColorFromState(toggleBlueChannel, toggleBlueButton);
+
+            toggleGreenButton = UIFactory.CreateButton(channelRowObj, "GreenButton", "Green Channel");
+            UIFactory.SetLayoutElement(toggleGreenButton.Component.gameObject, minHeight: 25, minWidth: 100, flexibleWidth: 0);
+            toggleGreenButton.OnClick += ToggleGreenChannel;
+            SetButtonColorFromState(toggleGreenChannel, toggleGreenButton);
+
+            toggleAlphaButton = UIFactory.CreateButton(channelRowObj, "AlphaButton", "Alpha Channel");
+            UIFactory.SetLayoutElement(toggleAlphaButton.Component.gameObject, minHeight: 25, minWidth: 100, flexibleWidth: 0);
+            toggleAlphaButton.OnClick += ToggleAlphaChannel;
+            SetButtonColorFromState(toggleAlphaChannel, toggleAlphaButton);
 
             // Save helper
 

@@ -87,7 +87,10 @@ namespace UnityExplorer.UI.Panels
                 File.AppendAllText(CurrentStreamPath, '\n' + message);
 
             if (logScrollPool != null)
+            {
                 logScrollPool.Refresh(true, false);
+                logScrollPool.JumpToBottom();
+            }
         }
 
         private static void ClearLogs()
@@ -125,9 +128,6 @@ namespace UnityExplorer.UI.Panels
                 cell.Disable();
                 return;
             }
-
-            // Logs are displayed in reverse order (newest at top)
-            index = Logs.Count - index - 1;
 
             LogInfo log = Logs[index];
             cell.IndexLabel.text = $"{index}:";

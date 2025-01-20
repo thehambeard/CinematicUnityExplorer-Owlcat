@@ -137,7 +137,7 @@ namespace UnityExplorer.UI.Panels
             {
                 try
                 {
-                    var volumes = scene.GetRootGameObjects()
+                    var volumes = RuntimeHelper.GetRootGameObjects(scene)
                        .SelectMany(rootObject => rootObject.GetComponentsInChildren<Volume>(includeInactive: false))
                        .ToList();
 
