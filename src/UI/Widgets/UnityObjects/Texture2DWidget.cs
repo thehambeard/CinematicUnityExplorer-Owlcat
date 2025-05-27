@@ -58,7 +58,18 @@ namespace UnityExplorer.UI.Widgets
                     texture = image.sprite.texture;
                 else
                 {
-                    texture = TextureHelper.CopyTexture(image.sprite.texture, image.sprite.textureRect);
+                    var rect = image.sprite.textureRect;
+#if !RT
+                    float flippedY = image.sprite.texture.height - rect.y - rect.height;
+
+                    texture = TextureHelper.CopyTexture(
+                        image.sprite.texture,
+                        new Rect(rect.x, flippedY, rect.width, rect.height));
+#else
+                    texture = TextureHelper.CopyTexture(
+                        image.sprite.texture,
+                        new Rect(rect.x, rect.y, rect.width, rect.height));
+#endif
                     shouldDestroyTexture = true;
                 }
             }
