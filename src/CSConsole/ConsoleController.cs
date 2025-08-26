@@ -266,6 +266,9 @@ namespace UnityExplorer.CSConsole
             if (SRENotSupported)
                 return;
 
+            if (EnableSuggestions)
+                ReflectionUtility.EnsureFullTypeCache();
+
             // prevent escape wiping input
             if (IInputManager.GetKeyDown(KeyCode.Escape))
             {

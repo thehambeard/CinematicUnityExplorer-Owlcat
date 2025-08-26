@@ -113,17 +113,7 @@ namespace UnityExplorer.ObjectExplorer
             if (SelectedScene != null && ((Scene)SelectedScene).IsValid())
                 CurrentRootObjects = RuntimeHelper.GetRootGameObjects((Scene)SelectedScene);
             else
-            {
-                UnityEngine.Object[] allObjects = RuntimeHelper.FindObjectsOfTypeAll(typeof(GameObject));
-                List<GameObject> objects = new();
-                foreach (UnityEngine.Object obj in allObjects)
-                {
-                    GameObject go = obj.TryCast<GameObject>();
-                    if (go.transform.parent == null && !go.scene.IsValid())
-                        objects.Add(go);
-                }
-                CurrentRootObjects = objects;
-            }
+                CurrentRootObjects = [];
         }
     }
 }
