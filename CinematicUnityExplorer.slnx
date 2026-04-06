@@ -1,0 +1,21 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="KM" />
+    <BuildType Name="KM_Debug" />
+    <BuildType Name="RT" />
+    <BuildType Name="RT_Debug" />
+    <BuildType Name="DH" />
+    <BuildType Name="DH_Debug" />
+    <BuildType Name="WOTR" />
+    <BuildType Name="WOTR_Debug" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="GamePaths.props" />
+    <File Path="Shared.props" />
+  </Folder>
+  <Project Path="../UniverseLib/src/UniverseLib.csproj" />
+  <Project Path="src/CinematicUnityExplorer.csproj">
+    <BuildType Solution="DH_Debug|*" Project="RT_Debug" />
+  </Project>
+</Solution>

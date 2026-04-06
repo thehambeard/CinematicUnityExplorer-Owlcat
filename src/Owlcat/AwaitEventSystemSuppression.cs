@@ -1,7 +1,7 @@
 ﻿using CinematicUnityExplorer;
 using HarmonyLib;
 using Kingmaker.UI.Selection;
-#if (RT || WOTR)
+#if (RT || DH || WOTR)
 using Owlcat.Runtime.Core.Logging;
 #endif
 using System.Reflection.Emit;
@@ -12,7 +12,7 @@ static class AwaitEventSystemSuppression
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
         var array = instructions.ToArray();
-#if RT
+#if RT || DH
 
         var methodInfo = AccessTools.Method(typeof(LogChannel), nameof(LogChannel.Log), [typeof(string)]);
 #endif

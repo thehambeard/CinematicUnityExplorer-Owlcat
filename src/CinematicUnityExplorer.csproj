@@ -1,81 +1,95 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="GenerateCustomPropsFile">
-  <Import Project="$(SolutionDir)Shared.props" />
-  <Import Project="$(SolutionDir)GamePaths.props" Condition="Exists('$(SolutionDir)GamePaths.props')" />
+	<Import Project="$(SolutionDir)Shared.props" />
+	<Import Project="$(SolutionDir)GamePaths.props" Condition="Exists('$(SolutionDir)GamePaths.props')" />
 
-  <PropertyGroup>
+	<PropertyGroup>
 		<AssemblyName>CinematicUnityExplorer</AssemblyName>
 		<RootNamespace>CinematicUnityExplorer</RootNamespace>
-	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-  </PropertyGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Samboy063.Tomlet" Private="true" Version="3.1.3" />
-    <Reference Include="$(SolutionDir)lib\mcs.dll" Private="true" />
-    <None Include="Info.json" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+	<ItemGroup>
+		<PackageReference Include="Samboy063.Tomlet" Private="true" Version="3.1.3" />
+		<Reference Include="$(SolutionDir)lib\mcs.dll" Private="true" />
+		<None Include="Info.json" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
 		<Content Include="$(SolutionDir)lib\Mono*" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-  </ItemGroup>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\UniverseLib\src\UniverseLib.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\UniverseLib\src\UniverseLib.csproj" />
+	</ItemGroup>
 
-  <Target Name="Deploy" AfterTargets="Build">
-    <ItemGroup>
-      <Files Include="$(TargetDir)\**\*.*" />
-    </ItemGroup>
-    <Copy Condition="('$(Configuration)' == 'WOTR' Or '$(Configuration)' == 'WOTR_Debug') And '$(WrathInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(WrathInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy Condition="('$(Configuration)' == 'RT' Or '$(Configuration)' == 'RT_Debug') And '$(RogueTraderInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(RogueTraderData)\UnityModManager\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy Condition="('$(Configuration)' == 'KM'  Or '$(Configuration)' == 'KM_Debug') And '$(KingmakerInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(KingmakerInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\$(OutputPath)" DestinationFile="$(MSBuildProjectDirectory)\$(OutputPath)\..\$(AssemblyName)-$(Version)-$(Configuration).zip" Overwrite="true" />
-  </Target>
+	<Target Name="Deploy" AfterTargets="Build">
+		<ItemGroup>
+			<Files Include="$(TargetDir)\**\*.*" />
+		</ItemGroup>
+		<!-- Will need to be adjusted when proper modding support is enabled -->
+		<Copy Condition="('$(Configuration)' == 'DH' Or '$(Configuration)' == 'DH_Debug') And '$(DarkHeresyInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(DarkHeresyInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+		<Copy Condition="('$(Configuration)' == 'WOTR' Or '$(Configuration)' == 'WOTR_Debug') And '$(WrathInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(WrathInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+		<Copy Condition="('$(Configuration)' == 'RT' Or '$(Configuration)' == 'RT_Debug') And '$(RogueTraderInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(RogueTraderData)\UnityModManager\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+		<Copy Condition="('$(Configuration)' == 'KM'  Or '$(Configuration)' == 'KM_Debug') And '$(KingmakerInstallDir)' != ''" SourceFiles="@(Files)" DestinationFiles="@(Files->'$(KingmakerInstallDir)\Mods\$(AssemblyName)\%(RecursiveDir)%(Filename)%(Extension)')" />
+		<ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\$(OutputPath)" DestinationFile="$(MSBuildProjectDirectory)\$(OutputPath)\..\$(AssemblyName)-$(Version)-$(Configuration).zip" Overwrite="true" />
+	</Target>
 
-  <PropertyGroup>
-    <WrathLogFile>$(WrathData)\Player.log</WrathLogFile>
-    <WrathMonoPathRegex>^Mono path\[0\] = '(.*?)/Wrath_Data/Managed'$</WrathMonoPathRegex>
-    <RTLogFile>$(RogueTraderData)\Player.log</RTLogFile>
-    <RTMonoPathRegex>^Mono path\[0\] = '(.*?)/WH40KRT_Data/Managed'$</RTMonoPathRegex>
-    <KMLogFile>$(KingmakerData)\output_log.txt</KMLogFile>
-    <KMMonoPathRegex>^\[Manager\] Mods path: (.*?)\\Mods.$</KMMonoPathRegex>
-  </PropertyGroup>
-  
-  <Target Name="GenerateCustomPropsFile" BeforeTargets="BeforeBuild" Condition="(Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == '') Or (Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == '') Or (Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == '')">
+	<PropertyGroup>
+		<DHLogFile>$(DarkHeresyData)\Player.log</DHLogFile>
+		<DarkHeresyMonoPathRegex>^Mono path\[0\] = '(.*?)/WH40KDH_Data/Managed'$</DarkHeresyMonoPathRegex>
+		<WrathLogFile>$(WrathData)\Player.log</WrathLogFile>
+		<WrathMonoPathRegex>^Mono path\[0\] = '(.*?)/Wrath_Data/Managed'$</WrathMonoPathRegex>
+		<RTLogFile>$(RogueTraderData)\Player.log</RTLogFile>
+		<RTMonoPathRegex>^Mono path\[0\] = '(.*?)/WH40KRT_Data/Managed'$</RTMonoPathRegex>
+		<KMLogFile>$(KingmakerData)\output_log.txt</KMLogFile>
+		<KMMonoPathRegex>^\[Manager\] Mods path: (.*?)\\Mods.$</KMMonoPathRegex>
+	</PropertyGroup>
 
-    <!-- RT configuration -->
-    <Exec Condition="Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == ''" Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(RTLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
-      <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
-      <Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
-    </Exec>
+	<Target Name="GenerateCustomPropsFile" BeforeTargets="BeforeBuild" Condition="(Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == '') Or (Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == '') Or (Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == '')">
 
-    <PropertyGroup Condition="Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == ''">
-      <RogueTraderInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(RTMonoPathRegex)).Groups[1].Value)</RogueTraderInstallDir>
-    </PropertyGroup>
+		<!-- DH configuration -->
+		<Exec Condition="Exists('$(DHLogFile)') And '$(DarkHeresyInstallDir)' == ''" Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(DHLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
+			<Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
+		</Exec>
 
-    <!-- WOTR configuration -->
-    <Exec Condition="Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == ''" Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(WrathLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
-      <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
-      <Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
-    </Exec>
+		<PropertyGroup Condition="Exists('$(DHLogFile)') And '$(DarkHeresyInstallDir)' == ''">
+			<DarkHeresyInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(DarkHeresyMonoPathRegex)).Groups[1].Value)</DarkHeresyInstallDir>
+		</PropertyGroup>
+		
+		<!-- RT configuration -->
+		<Exec Condition="Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == ''" Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(RTLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
+			<Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
+		</Exec>
 
-    <PropertyGroup Condition="Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == ''">
-      <WrathInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(WrathMonoPathRegex)).Groups[1].Value)</WrathInstallDir>
-    </PropertyGroup>
+		<PropertyGroup Condition="Exists('$(RTLogFile)') And '$(RogueTraderInstallDir)' == ''">
+			<RogueTraderInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(RTMonoPathRegex)).Groups[1].Value)</RogueTraderInstallDir>
+		</PropertyGroup>
 
-    <!-- KM configuration -->
-    <Exec Condition="Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == ''" Command="findstr /C:&quot;[Manager] Mods path: &quot; &quot;$(KMLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
-      <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
-      <Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
-    </Exec>
+		<!-- WOTR configuration -->
+		<Exec Condition="Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == ''" Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(WrathLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
+			<Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
+		</Exec>
 
-    <PropertyGroup Condition="Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == ''">
-      <KingmakerInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(KMMonoPathRegex)).Groups[1].Value)</KingmakerInstallDir>
-    </PropertyGroup>
-    
-    <!-- Write the .props file -->
-    <WriteLinesToFile File="$(SolutionDir)GamePaths.props" Lines="&#xD;&#xA;&lt;Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003'&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;      &lt;RogueTraderInstallDir&gt;$(RogueTraderInstallDir)&lt;/RogueTraderInstallDir&gt;&#xD;&#xA;      &lt;WrathInstallDir&gt;$(WrathInstallDir)&lt;/WrathInstallDir&gt;&#xD;&#xA;      &lt;KingmakerInstallDir&gt;$(KingmakerInstallDir)&lt;/KingmakerInstallDir&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;" Overwrite="true" Encoding="utf-8" />
-  </Target>
+		<PropertyGroup Condition="Exists('$(WrathLogFile)') And '$(WrathInstallDir)' == ''">
+			<WrathInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(WrathMonoPathRegex)).Groups[1].Value)</WrathInstallDir>
+		</PropertyGroup>
 
-  <Target Name="DeleteCustomPropsFile" BeforeTargets="Clean">
-    <Delete Files="$(SolutionDir)GamePaths.props" />
-  </Target>
+		<!-- KM configuration -->
+		<Exec Condition="Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == ''" Command="findstr /C:&quot;[Manager] Mods path: &quot; &quot;$(KMLogFile)&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
+			<Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
+		</Exec>
+
+		<PropertyGroup Condition="Exists('$(KMLogFile)') And '$(KingmakerInstallDir)' == ''">
+			<KingmakerInstallDir>$([System.Text.RegularExpressions.Regex]::Match($(MonoPathLine), $(KMMonoPathRegex)).Groups[1].Value)</KingmakerInstallDir>
+		</PropertyGroup>
+
+		<!-- Write the .props file -->
+		<WriteLinesToFile File="$(SolutionDir)GamePaths.props" Lines="&#xD;&#xA;&lt;Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003'&gt;&#xD;&#xA;  &lt;PropertyGroup&gt;&#xD;&#xA;      &lt;DarkHeresyInstallDir&gt;$(DarkHeresyInstallDir)&lt;/DarkHeresyInstallDir&gt;&#xD;&#xA;      &lt;RogueTraderInstallDir&gt;$(RogueTraderInstallDir)&lt;/RogueTraderInstallDir&gt;&#xD;&#xA;      &lt;WrathInstallDir&gt;$(WrathInstallDir)&lt;/WrathInstallDir&gt;&#xD;&#xA;      &lt;KingmakerInstallDir&gt;$(KingmakerInstallDir)&lt;/KingmakerInstallDir&gt;&#xD;&#xA;  &lt;/PropertyGroup&gt;&#xD;&#xA;&lt;/Project&gt;" Overwrite="true" Encoding="utf-8" />
+	</Target>
+
+	<Target Name="DeleteCustomPropsFile" BeforeTargets="Clean">
+		<Delete Files="$(SolutionDir)GamePaths.props" />
+	</Target>
 </Project>

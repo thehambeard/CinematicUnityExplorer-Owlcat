@@ -59,7 +59,7 @@ namespace UnityExplorer.UI.Widgets
                 else
                 {
                     var rect = image.sprite.textureRect;
-#if !RT
+#if !RT && !DH
                     float flippedY = image.sprite.texture.height - rect.y - rect.height;
 
                     texture = TextureHelper.CopyTexture(

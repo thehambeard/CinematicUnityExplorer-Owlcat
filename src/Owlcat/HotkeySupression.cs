@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using Kingmaker.UI;
-#if RT
+#if RT || DH
 using Kingmaker.UI.InputSystems;
 #endif
 using UnityEngine.EventSystems;

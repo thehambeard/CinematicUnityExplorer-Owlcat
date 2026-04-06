@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-#if RT
+#if RT || DH
 using Kingmaker.Code.UI.MVVM;
 #endif
 #if WOTR
@@ -16,6 +16,11 @@ namespace CinematicUnityExplorer.Owlcat;
 internal static class CinematicUnityExplorerLoader
 {
     static bool _loaded;
+
+#if DH
+    [HarmonyPatch(typeof(RootUIContext), nameof(RootUIContext.InitializeUISystems))]
+    [HarmonyPostfix]
+#endif
 
 #if RT
     [HarmonyPatch(typeof(RootUIContext), nameof(RootUIContext.InitializeUiSceneCoroutine))]
